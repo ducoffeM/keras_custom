@@ -1,15 +1,15 @@
 import numpy as np
 import keras
-from keras.layers import AveragePooling2D, Conv2DTranspose, ZeroPadding2D, Layer
+from keras.layers import AveragePooling3D, Conv3DTranspose, ZeroPadding3D, Layer
 from keras.models import Sequential
 import keras.ops as K
 
 
-class BackwardAveragePooling2D(Layer):
+class BackwardAveragePooling3D(Layer):
 
     def __init__(
         self,
-        layer: AveragePooling2D,
+        layer: AveragePooling3D,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -21,7 +21,7 @@ class BackwardAveragePooling2D(Layer):
         # average pooling is a depthwise convolution
         # we use convtranspose to invert the convolution of kernel ([1/n..1/n]..[1/n..1/n]) with n the pool size
         pool_size = list(layer.pool_size)
-        layer_t = Conv2DTranspose(
+        layer_t = Conv3DTranspose(
             1,
             layer.pool_size,
             strides=layer.strides,
@@ -39,15 +39,17 @@ class BackwardAveragePooling2D(Layer):
         input_shape = list(self.layer.input.shape[1:])
 
         if layer.data_format == "channels_first":
+            d_pad = input_shape[-3] - input_shape_t[-3]
             w_pad = input_shape[-2] - input_shape_t[-2]
             h_pad = input_shape[-1] - input_shape_t[-1]
         else:
+            d_pad = input_shape[2] - input_shape_t[2]
             w_pad = input_shape[0] - input_shape_t[0]
             h_pad = input_shape[1] - input_shape_t[1]
 
-        if w_pad or h_pad:
-            padding = ((0, w_pad), (0, h_pad))
-            self.model = Sequential([layer_t, ZeroPadding2D(padding, data_format=self.layer.data_format)])
+        if w_pad or h_pad or d_pad:
+            padding = ((0, d_pad), (0, w_pad), (0, h_pad))
+            self.model = Sequential([layer_t, ZeroPadding3D(padding, data_format=self.layer.data_format)])
         else:
             self.model = Sequential([layer_t])
         self.model(self.layer.output)
@@ -75,7 +77,7 @@ class BackwardAveragePooling2D(Layer):
         return outputs
 
 
-def get_backward_AveragePooling2D(layer: AveragePooling2D, use_bias=True) -> Layer:
+def get_backward_AveragePooling3D(layer: AveragePooling3D, use_bias=True) -> Layer:
 
-    layer_backward = BackwardAveragePooling2D(layer)
+    layer_backward = BackwardAveragePooling3D(layer)
     return layer_backward
