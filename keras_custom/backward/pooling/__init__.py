@@ -1,0 +1,1 @@
+from .average_pooling2d import get_backward_AveragePooling2D
