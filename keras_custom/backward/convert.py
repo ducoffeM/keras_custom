@@ -2,6 +2,7 @@ import logging
 from typing import Any, Optional
 
 from keras_custom.layers import MulConstant
+from keras_custom.backward import BackwardLayer
 from keras.layers import (
     Activation,
     Add,
@@ -95,5 +96,19 @@ default_mapping_keras2backward_layer: dict[type[Layer], type[callable]]={
 
 def get_backward(layer:Layer, use_bias:bool=True):
     keras_class = type(layer)
+    if isinstance(layer, BackwardLayer):
+        if use_bias:
+            return layer.layer
+        elif not hasattr(layer.layer, 'use_bias'):
+            return layer.layer
+        else:
+            # copy layer
+            config = layer.layer.get_config()
+            config['use_bias']=False
+            layer_ = layer.layer.__class__.from_config(config)
+            layer_.weights = layer.layer.weights[:1]
+            layer_.built=True
+            return layer_
+            
     get_backward_layer = default_mapping_keras2backward_layer.get(keras_class)
     return get_backward_layer(layer, use_bias)

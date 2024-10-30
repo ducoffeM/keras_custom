@@ -21,5 +21,6 @@ from .pooling import (
     get_backward_GlobalAveragePooling1D,
     get_backward_GlobalAveragePooling3D,
 )
+from .layer import BackwardLayer
 
 from .convert import get_backward
