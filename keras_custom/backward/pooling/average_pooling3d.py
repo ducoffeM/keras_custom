@@ -3,9 +3,24 @@ import keras
 from keras.layers import AveragePooling3D, Conv3DTranspose, ZeroPadding3D, Layer
 from keras.models import Sequential
 import keras.ops as K
+from keras_custom.backward import BackwardLayer
 
 
-class BackwardAveragePooling3D(Layer):
+class BackwardAveragePooling3D(BackwardLayer):
+    """
+    This class implements a custom layer for backward pass of a `AveragePooling3D` layer in Keras.
+    It can be used to apply operations in a reverse manner, reshaping, splitting, and reconstructing the average pooling
+    outputs back to the original input shape.
+
+    ### Example Usage:
+    ```python
+    from keras.layers import AveragePooling3D
+    from keras_custom.backward.layers import BackwardAveragePooling3D
+
+    # Assume `average_pooling_layer` is a pre-defined AveragePooling3D layer
+    backward_layer = BackwardAveragePooling3D(average_pooling_layer)
+    output = backward_layer(input_tensor)
+    """
 
     def __init__(
         self,
@@ -78,6 +93,28 @@ class BackwardAveragePooling3D(Layer):
 
 
 def get_backward_AveragePooling3D(layer: AveragePooling3D, use_bias=True) -> Layer:
+    """
+    This function creates a `BackwardAveragePooling3D` layer based on a given `AveragePooling3D` layer. It provides
+    a convenient way to obtain a backward approximation of the input `AveragePooling3D` layer, using the
+    `BackwardAveragePooling3D` class to reverse the average pooling operation.
+
+    ### Parameters:
+    - `layer`: A Keras `AveragePooling3D` layer instance. The function uses this layer's configurations to set up the `BackwardAveragePooling3D` layer.
+    - `use_bias`: Boolean, optional (default=True). Specifies whether the bias should be included in the
+      backward layer.
+
+    ### Returns:
+    - `layer_backward`: An instance of `BackwardAveragePooling3D`, which acts as the reverse layer for the given `AveragePooling3D`.
+
+    ### Example Usage:
+    ```python
+    from keras.layers import AveragePooling3D
+    from keras_custom.backward import get_backward_AveragePooling3D
+
+    # Assume `average_layer` is a pre-defined AveragePooling3D layer
+    backward_layer = get_backward_AveragePooling3D(average_layer, use_bias=True)
+    output = backward_layer(input_tensor)
+    """
 
     layer_backward = BackwardAveragePooling3D(layer)
     return layer_backward

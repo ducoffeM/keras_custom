@@ -1,4 +1,4 @@
-from keras.layers import DepthwiseConv1D, Conv1DTranspose, Reshape, ZeroPadding1D, Cropping1D
+from keras.layers import Layer, DepthwiseConv1D, Conv1DTranspose, Reshape, ZeroPadding1D, Cropping1D
 from keras_custom.backward import BackwardLayer
 from keras.models import Sequential
 import keras.ops as K
@@ -146,7 +146,7 @@ def get_backward_DepthwiseConv1D(layer: DepthwiseConv1D, use_bias=True) -> Layer
     ### Example Usage:
     ```python
     from keras.layers import DepthwiseConv1D
-    from my_custom_layers import get_backward_DepthwiseConv1D
+    from keras_custom.layers import get_backward_DepthwiseConv1D
 
     # Assume `depthwise_conv_layer` is a pre-defined DepthwiseConv1D layer
     backward_layer = get_backward_DepthwiseConv1D(depthwise_conv_layer, use_bias=True)
