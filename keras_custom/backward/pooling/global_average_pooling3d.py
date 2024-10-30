@@ -26,18 +26,34 @@ class BackwardGlobalAveragePooling3D(Layer):
 
         if self.layer.data_format == "channels_first":
             d_in, w_in, h_in = self.layer.input.shape[-3:]
-            return K.repeat(
-                K.repeat(K.repeat(K.expand_dims(K.expand_dims(K.expand_dims(inputs, -1), -1), -1), d_in, -3), w_in, -2),
-                h_in,
-                -1,
-            ) / (w_in * h_in * d_in)
+            if self.layer.keepdims:
+                return K.repeat(
+                    K.repeat(K.repeat(inputs, d_in, -3), w_in, -2),
+                    h_in,
+                    -1,
+                ) / (w_in * h_in * d_in)
+            else:
+                return K.repeat(
+                    K.repeat(
+                        K.repeat(K.expand_dims(K.expand_dims(K.expand_dims(inputs, -1), -1), -1), d_in, -3), w_in, -2
+                    ),
+                    h_in,
+                    -1,
+                ) / (w_in * h_in * d_in)
         else:
             d_in, w_in, h_in = self.layer.input.shape[1:4]
-            return K.repeat(
-                K.repeat(K.repeat(K.expand_dims(K.expand_dims(K.expand_dims(inputs, 1), 1), 1), d_in, 1), w_in, 2),
-                h_in,
-                3,
-            ) / (w_in * h_in * d_in)
+            if self.layer.keepdims:
+                return K.repeat(
+                    K.repeat(K.repeat(inputs, d_in, 1), w_in, 2),
+                    h_in,
+                    3,
+                ) / (w_in * h_in * d_in)
+            else:
+                return K.repeat(
+                    K.repeat(K.repeat(K.expand_dims(K.expand_dims(K.expand_dims(inputs, 1), 1), 1), d_in, 1), w_in, 2),
+                    h_in,
+                    3,
+                ) / (w_in * h_in * d_in)
 
 
 def get_backward_GlobalAveragePooling3D(layer: GlobalAveragePooling3D, use_bias=True) -> Layer:
