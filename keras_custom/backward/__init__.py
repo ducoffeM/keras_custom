@@ -3,7 +3,7 @@ from .convolutional import (
     get_backward_DepthwiseConv2D,
     get_backward_DepthwiseConv1D,
 )
-from .custom import get_backward_MulConstant
+from .custom import get_backward_MulConstant, get_backward_PlusConstant
 from .normalization import get_backward_BatchNormalization
 from .reshaping import (
     get_backward_ZeroPadding2D,

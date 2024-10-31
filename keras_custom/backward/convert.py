@@ -1,7 +1,7 @@
 import logging
 from typing import Any, Optional
 
-from keras_custom.layers import MulConstant
+from keras_custom.layers import MulConstant, PlusConstant
 from keras_custom.backward.layer import BackwardLinearLayer
 from keras.layers import (
     Activation,
@@ -48,6 +48,7 @@ from keras_custom.backward import (
     get_backward_DepthwiseConv1D,
     get_backward_DepthwiseConv2D,
     get_backward_MulConstant,
+    get_backward_PlusConstant,
     get_backward_ZeroPadding1D,
     get_backward_ZeroPadding2D,
     get_backward_ZeroPadding3D,
@@ -96,7 +97,8 @@ default_mapping_keras2backward_layer: dict[type[Layer], type[callable]]={
     GlobalAveragePooling1D:get_backward_GlobalAveragePooling1D,
     GlobalAveragePooling3D:get_backward_GlobalAveragePooling3D,
     # custom
-    MulConstant: get_backward_MulConstant
+    MulConstant: get_backward_MulConstant,
+    PlusConstant: get_backward_PlusConstant,
 }
 """Default mapping between keras layers and get_backward callable"""
 
