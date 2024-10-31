@@ -1,11 +1,11 @@
 from keras.layers import BatchNormalization, Layer
-from keras_custom.backward import BackwardLayer
+from keras_custom.backward.layer import BackwardLinearLayer
 from keras.src import backend
 from keras.src import ops
 
 
 
-class BackwardBatchNormalization(BackwardLayer):
+class BackwardBatchNormalization(BackwardLinearLayer):
     """
     This class implements a custom layer for backward pass of a `BatchNormalization` layer in Keras.
     It can be used to apply operations in a reverse manner, reshaping, splitting, and reconstructing the normalization

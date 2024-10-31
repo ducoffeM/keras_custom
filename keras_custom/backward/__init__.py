@@ -2,7 +2,6 @@ from .convolutional import (
     get_backward_Conv2D,
     get_backward_DepthwiseConv2D,
     get_backward_DepthwiseConv1D,
-    get_backward_DepthwiseConv3D,
 )
 from .custom import get_backward_MulConstant
 from .normalization import get_backward_BatchNormalization
@@ -26,6 +25,5 @@ from .pooling import (
     get_backward_GlobalAveragePooling1D,
     get_backward_GlobalAveragePooling3D,
 )
-from .layer import BackwardLayer
 
 from .convert import get_backward

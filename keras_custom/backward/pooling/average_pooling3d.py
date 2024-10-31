@@ -3,10 +3,10 @@ import keras
 from keras.layers import AveragePooling3D, Conv3DTranspose, ZeroPadding3D, Layer
 from keras.models import Sequential
 import keras.ops as K
-from keras_custom.backward import BackwardLayer
+from keras_custom.backward.layer import BackwardLinearLayer
 
 
-class BackwardAveragePooling3D(BackwardLayer):
+class BackwardAveragePooling3D(BackwardLinearLayer):
     """
     This class implements a custom layer for backward pass of a `AveragePooling3D` layer in Keras.
     It can be used to apply operations in a reverse manner, reshaping, splitting, and reconstructing the average pooling

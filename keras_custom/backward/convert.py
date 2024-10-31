@@ -2,7 +2,7 @@ import logging
 from typing import Any, Optional
 
 from keras_custom.layers import MulConstant
-from keras_custom.backward import BackwardLayer
+from keras_custom.backward.layer import BackwardLinearLayer
 from keras.layers import (
     Activation,
     Add,
@@ -13,7 +13,6 @@ from keras.layers import (
     Conv2D,
     DepthwiseConv1D,
     DepthwiseConv2D,
-    DepthwiseConv3D,
     ZeroPadding1D,
     ZeroPadding2D,
     ZeroPadding3D,
@@ -48,7 +47,6 @@ from keras_custom.backward import (
     get_backward_Conv2D,
     get_backward_DepthwiseConv1D,
     get_backward_DepthwiseConv2D,
-    get_backward_DepthwiseConv3D,
     get_backward_MulConstant,
     get_backward_ZeroPadding1D,
     get_backward_ZeroPadding2D,
@@ -77,7 +75,6 @@ default_mapping_keras2backward_layer: dict[type[Layer], type[callable]]={
     Conv2D: get_backward_Conv2D,
     DepthwiseConv1D:get_backward_DepthwiseConv1D,
     DepthwiseConv2D:get_backward_DepthwiseConv2D,
-    DepthwiseConv3D:get_backward_DepthwiseConv3D,
     # reshaping
     ZeroPadding1D: get_backward_ZeroPadding1D,
     ZeroPadding2D: get_backward_ZeroPadding2D,
@@ -105,7 +102,7 @@ default_mapping_keras2backward_layer: dict[type[Layer], type[callable]]={
 
 def get_backward(layer:Layer, use_bias:bool=True):
     keras_class = type(layer)
-    if isinstance(layer, BackwardLayer):
+    if isinstance(layer, BackwardLinearLayer):
         if use_bias:
             return layer.layer
         elif not hasattr(layer.layer, 'use_bias'):

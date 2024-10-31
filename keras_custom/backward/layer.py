@@ -2,7 +2,7 @@
 from keras.layers import Layer, Wrapper
 
 
-class BackwardLayer(Wrapper):
+class BackwardLinearLayer(Wrapper):
     """
     A custom Keras wrapper layer that reverses the operations of a given layer.
 

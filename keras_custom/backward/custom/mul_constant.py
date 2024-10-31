@@ -1,4 +1,4 @@
-from keras_custom.layers.onnx import MulConstant
+from keras_custom.layers import MulConstant
 from keras.layers import Layer
 
 def get_backward_MulConstant(layer: MulConstant, use_bias=True) -> Layer:

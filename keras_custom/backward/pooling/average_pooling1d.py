@@ -3,10 +3,10 @@ import keras
 from keras.layers import AveragePooling1D, Conv1DTranspose, ZeroPadding1D, Layer
 from keras.models import Sequential
 import keras.ops as K
-from keras_custom.backward import BackwardLayer
+from keras_custom.backward.layer import BackwardLinearLayer
 
 
-class BackwardAveragePooling1D(BackwardLayer):
+class BackwardAveragePooling1D(BackwardLinearLayer):
     """
     This class implements a custom layer for backward pass of a `AveragePooling1D` layer in Keras.
     It can be used to apply operations in a reverse manner, reshaping, splitting, and reconstructing the average pooling
@@ -92,7 +92,7 @@ def get_backward_AveragePooling1D(layer: AveragePooling1D, use_bias=True) -> Lay
     """
     This function creates a `BackwardAveragePooling1D` layer based on a given `AveragePooling1D` layer. It provides
     a convenient way to obtain a backward approximation of the input `AveragePooling1D` layer, using the
-    `BackwardAveragePooling1D` class to reverse the batch normalization operation.
+    `BackwardAveragePooling1D` class to reverse the average pooling operation.
 
     ### Parameters:
     - `layer`: A Keras `AveragePooling1D` layer instance. The function uses this layer's configurations to set up the `BackwardAveragePooling1D` layer.

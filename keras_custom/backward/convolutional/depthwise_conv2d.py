@@ -1,12 +1,12 @@
 from keras.layers import Layer, DepthwiseConv2D, Conv2DTranspose, Reshape, ZeroPadding2D, Cropping2D
-from keras_custom.backward import BackwardLayer
+from keras_custom.backward.layer import BackwardLinearLayer
 from keras.models import Sequential
 import keras.ops as K
 
 from typing import List
 
 
-class BackwardDepthwiseConv2D(BackwardLayer):
+class BackwardDepthwiseConv2D(BackwardLinearLayer):
     """
     This class implements a custom layer for backward pass of a `DepthwiseConv2D` layer in Keras.
     It can be used to apply operations in a reverse manner, reshaping, splitting, and reconstructing the depthwise convolution
