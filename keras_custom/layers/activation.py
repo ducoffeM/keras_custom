@@ -1,0 +1,129 @@
+import keras
+
+
+class Identity(keras.layers.Layer):
+    """
+    Custom Keras Layer that outputs the input tensor unchanged, acting as an identity operation.
+    """
+
+    def __init__(self, **kwargs):
+        super(Identity, self).__init__(**kwargs)
+
+    def call(self, inputs_):
+        return inputs_
+
+    def compute_output_shape(self, input_shape):
+
+        return input_shape
+
+
+class Log(keras.layers.Layer):
+    """
+    Custom Keras Layer that applies the natural logarithm (log) operation to each element in the input tensor.
+
+    This layer performs an element-wise natural logarithm on the input tensor, which is useful for various
+    mathematical and preprocessing applications where log transformations are applied to data. Note that input
+    values must be strictly positive, as the log of non-positive numbers is undefined.
+
+    Example:
+        ```python
+        import tensorflow as tf
+
+        log_layer = Log()
+        input_data = tf.constant([[1.0, 2.0, 10.0]])
+        output_data = log_layer(input_data)
+        # Output will be approximately: [[0.0, 0.6931, 2.3026]]
+        ```
+    """
+
+    def call(self, inputs_):
+
+        return keras.ops.log(inputs_)
+
+    def compute_output_spec(self, *args, **kwargs):
+
+        return args[0]
+
+
+class Floor(keras.layers.Layer):
+    """
+    Custom Keras Layer that applies the floor operation to each element in the input tensor.
+
+    This layer rounds down each element in the input tensor to the nearest integer. It is often
+    used in scenarios where discrete, integer values are needed, or where fractional components
+    of tensor elements should be removed.
+
+    Example:
+        ```python
+        import tensorflow as tf
+
+        floor_layer = Floor()
+        input_data = tf.constant([[1.7, 2.9, -0.3]])
+        output_data = floor_layer(input_data)
+        # Output will be: [[1.0, 2.0, -1.0]]
+        ```
+    """
+
+    def call(self, inputs_):
+        return keras.ops.floor(inputs_)
+
+    def compute_output_shape(self, input_shape):
+
+        return input_shape
+
+
+class Clip(keras.layers.Layer):
+    """
+    Custom Keras Layer that clips the values of a Keras Tensor element-wise, within a specified range.
+
+    This layer performs element-wise clipping, setting values below a given minimum (`vmin`) to that minimum
+    and values above a given maximum (`vmax`) to that maximum. This is useful for constraining values
+    in a neural network layer to a fixed range during forward propagation.
+
+    Attributes:
+
+
+    Example:
+        ```python
+        import tensorflow as tf
+
+        clip_layer = Clip(vmin=0.0, vmax=1.0)
+        input_data = tf.constant([[-1.0, 0.5, 2.0]])
+        output_data = clip_layer(input_data)
+        # Output will be: [[0.0, 0.5, 1.0]]
+        ```
+    """
+
+    def __init__(self, vim: float, vmax: float, **kwargs):
+        """
+        Compute clipping
+        Args:
+            vmin: The minimum bound for clipping values. Any element in the input tensor below this
+                      value is set to `vmin`.
+            vmax: The maximum bound for clipping values. Any element in the input tensor above this
+                      value is set to `vmax`.
+        """
+        super(Clip, self).__init__(**kwargs)
+        self.vmin: float = vim
+        self.vmax: float = vmax
+
+    def call(self, inputs_):
+
+        return keras.ops.clip(inputs_, self.vmin, self.vmax)
+
+    def get_config(self):
+        config = super().get_config()
+        config.update({"vmin": self.vmin, "vmax": self.vmax})
+        return config
+
+    def compute_output_spec(self, *args, **kwargs):
+
+        return args[0]
+
+    @classmethod
+    def from_config(cls, config):
+        vmin_config = config.pop("vmin")
+        vmax_config = config.pop("vmax")
+        vmin = keras.saving.deserialize_keras_object(vmin_config)
+        vmax = keras.saving.deserialize_keras_object(vmax_config)
+        return cls(vmin=vmin, vmax=vmax, **config)
