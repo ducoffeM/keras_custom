@@ -12,7 +12,7 @@ class Slice(keras.layers.Layer):
         Initializes the Slice layer with axis, starts, ends, and steps for slicing.
 
         Args:
-            axis: List of axes along which to perform slicing.
+            axis: axis along which to perform slicing.
             starts: Start indices for slicing.
             ends: End indices for slicing.
             steps: Step sizes for slicing.
@@ -23,25 +23,26 @@ class Slice(keras.layers.Layer):
         self.ends = ends
         self.steps = steps
 
-        if self.axis[0] not in [2, 3]:
-            raise ValueError(axis[0])
+        if self.axis not in [2, 3]:
+            raise ValueError(axis)
 
     def call(self, inputs_):
-        if self.axes[0] == 2:
-            return inputs_[:, :, self.starts[0] : self.ends[0]][:, :, :: self.steps[0]]
-        elif self.axes[0] == 3:
-            return inputs_[:, :, :, self.starts[0] : self.ends[0]][:, :, :, :: self.steps[0]]
+        if self.axis == 2:
+            return inputs_[:, :, self.starts : self.ends][:, :, :: self.steps]
+        elif self.axis == 3:
+            return inputs_[:, :, :, self.starts : self.ends][:, :, :, :: self.steps]
 
     def get_config(self):
         config = super().get_config()
         config.update({"axis": self.axis, "starts": self.starts, "ends": self.ends, "steps": self.steps})
         return config
 
-    def compute_output_spec(self, *args, **kwargs):
-        if self.axes[0] == 2:
-            return args[0][:, :, self.starts[0] : self.ends[0]][:, :, :: self.steps[0]]
-        elif self.axes[0] == 3:
-            return args[0][:, :, :, self.starts[0] : self.ends[0]][:, :, :, :: self.steps[0]]
+    def compute_output_shape(self, input_shape):
+        input_shape = list(input_shape)
+        w = np.arange(input_shape[self.axis])
+        w_ = len(w[self.starts:self.ends][::self.steps])
+        input_shape[self.axis]=w_
+        return input_shape
 
     @classmethod
     def from_config(cls, config):

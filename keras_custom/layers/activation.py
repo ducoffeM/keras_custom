@@ -40,9 +40,9 @@ class Log(keras.layers.Layer):
 
         return keras.ops.log(inputs_)
 
-    def compute_output_spec(self, *args, **kwargs):
+    def compute_output_shape(self, input_shape):
 
-        return args[0]
+        return input_shape
 
 
 class Floor(keras.layers.Layer):
@@ -94,7 +94,7 @@ class Clip(keras.layers.Layer):
         ```
     """
 
-    def __init__(self, vim: float, vmax: float, **kwargs):
+    def __init__(self, vmin: float, vmax: float, **kwargs):
         """
         Compute clipping
         Args:
@@ -104,7 +104,7 @@ class Clip(keras.layers.Layer):
                       value is set to `vmax`.
         """
         super(Clip, self).__init__(**kwargs)
-        self.vmin: float = vim
+        self.vmin: float = vmin
         self.vmax: float = vmax
 
     def call(self, inputs_):
@@ -116,9 +116,9 @@ class Clip(keras.layers.Layer):
         config.update({"vmin": self.vmin, "vmax": self.vmax})
         return config
 
-    def compute_output_spec(self, *args, **kwargs):
+    def compute_output_shape(self, input_shape):
 
-        return args[0]
+        return input_shape
 
     @classmethod
     def from_config(cls, config):

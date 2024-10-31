@@ -10,27 +10,27 @@ class Cast(keras.layers.Layer):
     The desired data type is specified upon initialization.
     """
 
-    def __init__(self, dtype: int, **kwargs):
+    def __init__(self, dtype_key: int, **kwargs):
         super(Cast, self).__init__(**kwargs)
-        self.dtype: int = dtype
+        self.dtype_key: int = dtype_key
         self.cast_map = {
-            1: K.float32,
-            2: K.uint8,
-            3: K.int8,
-            5: K.int16,
-            6: K.int32,
-            7: K.int64,
-            9: K.bool,
-            10: K.float16,
-            11: K.double,
+            1: "float32",
+            2: "uint8",
+            3: "int8",
+            5: "int16",
+            6: "int32",
+            7: "int64",
+            9: "bool",
+            10: "float16",
+            11: "double",
         }
 
     def call(self, inputs_):
-        return keras.ops.cast(inputs_, self.cast_map[self.dtype])
+        return keras.ops.cast(inputs_, self.cast_map[self.dtype_key])
 
     def get_config(self):
         config = super().get_config()
-        config.update({"dtype": self.dtype, "cast_map": self.cast_map})
+        config.update({"dtype_key": self.dtype_key})
         return config
 
     def compute_output_shape(self, input_shape):
@@ -39,8 +39,6 @@ class Cast(keras.layers.Layer):
 
     @classmethod
     def from_config(cls, config):
-        dtype_config = config.pop("dtype")
-        cast_map_config = config.pop("cast_map")
-        dtype = keras.saving.deserialize_keras_object(dtype_config)
-        cast_map = keras.saving.deserialize_keras_object(cast_map_config)
-        return cls(dtype=dtype, cast_map=cast_map, **config)
+        dtype_key_config = config.pop("dtype_key")
+        dtype_key = keras.saving.deserialize_keras_object(dtype_key_config)
+        return cls(dtype_key=dtype_key, **config)
