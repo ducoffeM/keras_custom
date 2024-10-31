@@ -40,8 +40,8 @@ class Slice(keras.layers.Layer):
     def compute_output_shape(self, input_shape):
         input_shape = list(input_shape)
         w = np.arange(input_shape[self.axis])
-        w_ = len(w[self.starts:self.ends][::self.steps])
-        input_shape[self.axis]=w_
+        w_ = len(w[self.starts : self.ends][:: self.steps])
+        input_shape[self.axis] = w_
         return input_shape
 
     @classmethod

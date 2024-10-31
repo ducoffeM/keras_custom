@@ -1,6 +1,7 @@
 from .conftest import func_layer
 from keras_custom.layers import Cast
 
+
 def test_Cast():
 
     layer = Cast(1)

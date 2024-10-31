@@ -1,6 +1,7 @@
 from .conftest import func_layer
 from keras_custom.layers import PlusConstant, MulConstant, DivConstant
 
+
 def test_PlusConstant():
 
     layer = PlusConstant(constant=1)
@@ -31,6 +32,7 @@ def test_MulConstant():
     layer = MulConstant(constant=2.0)
     input_shape = (1, 32, 32)
     func_layer(layer, input_shape)
+
 
 def test_DivConstant():
 

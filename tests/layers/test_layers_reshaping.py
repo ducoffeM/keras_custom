@@ -6,15 +6,17 @@ from keras.models import Sequential
 import numpy as np
 import os
 
+
 def test_Slice():
 
     layer = Slice(axis=2, starts=0, ends=-1, steps=1)
     input_shape = (1, 32, 32)
     func_layer(layer, input_shape)
 
+
 def test_Split():
 
-    layer = Split(splits=[2,5], axis=-1)
+    layer = Split(splits=[2, 5], axis=-1)
     toy_model = Sequential([layer])
     input_ = torch.ones((1, 4, 32))
     elems = toy_model.predict(input_)
@@ -33,4 +35,3 @@ def test_Split():
     for i in range(len(elems)):
         np.testing.assert_almost_equal(elems[i], output_after_export[i], err_msg="corrupted weights")
     os.remove(filename)
-

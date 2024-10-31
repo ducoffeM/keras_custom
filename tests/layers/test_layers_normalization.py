@@ -1,6 +1,7 @@
 from .conftest import func_layer
 from keras_custom.layers import ReduceL2
 
+
 def test_Max():
 
     layer = ReduceL2(axis=-1, keepdims=True)

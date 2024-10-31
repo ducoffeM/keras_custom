@@ -1,6 +1,7 @@
 from .conftest import func_layer
 from keras_custom.layers import Sum
 
+
 def test_Sum():
 
     layer = Sum(axis=-1, keepdims=True)

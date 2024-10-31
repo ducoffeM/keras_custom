@@ -1,6 +1,7 @@
 from .conftest import func_layer
 from keras_custom.layers import Min
 
+
 def test_Min():
 
     layer = Min(axis=-1, keepdims=True)

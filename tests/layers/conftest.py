@@ -9,6 +9,7 @@ import torch
 # test custom layers
 # to test: initialization, inference, serialization and deserialization
 
+
 def func_layer(layer, input_shape):
 
     # create a toy model: Dense(np.prod(input_shape)), Reshape(input_shape), layer, Reshape(-1), Dense(1)
@@ -18,8 +19,7 @@ def func_layer(layer, input_shape):
     dense_1 = Dense(1)
     if not isinstance(layer, list):
         layer = [layer]
-    toy_model = Sequential(layers=[dense_0, reshape_0]+layer+[reshape_1, dense_1])
-
+    toy_model = Sequential(layers=[dense_0, reshape_0] + layer + [reshape_1, dense_1])
 
     toy_dataset = torch.ones((10, 2))
     toy_label = torch.ones((10, 1))

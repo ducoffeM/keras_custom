@@ -1,6 +1,7 @@
 from .conftest import func_layer
 from keras_custom.layers import Pow
 
+
 def test_Pow():
 
     layer = Pow(power=1)

@@ -113,7 +113,7 @@ class DivConstant(keras.layers.Layer):
         """
         super(DivConstant, self).__init__(**kwargs)
 
-        if hasattr(constant,'shape'):
+        if hasattr(constant, "shape"):
             self.constant: Union[float, Tensor] = keras.ops.convert_to_tensor(constant)
         else:
             self.constant: Union[float, Tensor] = constant

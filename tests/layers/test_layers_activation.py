@@ -1,6 +1,7 @@
 from .conftest import func_layer
 from keras_custom.layers import Identity, Log, Floor, Clip
 
+
 def test_Identity():
 
     layer = Identity()
@@ -40,7 +41,7 @@ def test_Clip():
     input_shape = (2,)
     func_layer(layer, input_shape)
 
-    layer = Clip(vmin=0., vmax=1.)
+    layer = Clip(vmin=0.0, vmax=1.0)
     input_shape = (1, 32)
     func_layer(layer, input_shape)
 
@@ -63,5 +64,3 @@ def test_Log():
     layers = [Clip(vmin=0.5, vmax=10), Log()]
     input_shape = (1, 32, 32)
     func_layer(layers, input_shape)
-
-
