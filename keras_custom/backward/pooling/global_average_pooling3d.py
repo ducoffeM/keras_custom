@@ -2,23 +2,10 @@ import numpy as np
 import keras
 from keras.layers import Layer, GlobalAveragePooling3D
 import keras.ops as K
+from keras_custom.backward.layer import BackwardLinearLayer
 
 
 class BackwardGlobalAveragePooling3D(Layer):
-
-    def __init__(
-        self,
-        layer: GlobalAveragePooling3D,
-        **kwargs,
-    ):
-        super().__init__(**kwargs)
-
-        self.layer = layer
-        if not self.layer.built:
-            raise ValueError("layer {} is not built".format(layer.name))
-
-    def compute_output_shape(self, input_shape):
-        return self.layer.input.shape
 
     # serialize ...
 

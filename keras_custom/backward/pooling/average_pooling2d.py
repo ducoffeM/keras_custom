@@ -1,6 +1,6 @@
 import numpy as np
 import keras
-from keras.layers import AveragePooling2D, Conv2DTranspose, ZeroPadding2D, Layer
+from keras.layers import AveragePooling2D, Conv2DTranspose, ZeroPadding2D, Cropping2D, Layer
 from keras.models import Sequential
 import keras.ops as K
 from keras_custom.backward.layer import BackwardLinearLayer
@@ -27,11 +27,56 @@ class BackwardAveragePooling2D(BackwardLinearLayer):
         layer: AveragePooling2D,
         **kwargs,
     ):
-        super().__init__(**kwargs)
+        super().__init__(layer=layer, **kwargs)
 
-        self.layer = layer
         if not self.layer.built:
             raise ValueError("layer {} is not built".format(layer.name))
+        
+        # conv_layer
+        pad_layers=[]
+        if layer.padding == 'same':
+            config = self.layer.get_config()
+            config['padding']='valid'
+            fake_layer = AveragePooling2D.from_config(config)
+            output_shape_pad_same = list(fake_layer(layer.input).shape[1:])
+            output_shape = list(layer.output.shape[1:])
+            if layer.data_format == "channels_first":
+                w_pad = output_shape_pad_same[-2] - output_shape[-2]
+                h_pad = output_shape_pad_same[-1] - output_shape[-1]
+            else:
+                w_pad = output_shape_pad_same[0] - output_shape[0]
+                h_pad = output_shape_pad_same[1] - output_shape[1]
+
+            if w_pad or h_pad:
+                # add padding
+                if w_pad >= 0 and h_pad >= 0:
+                    padding = ((w_pad // 2, w_pad // 2 + w_pad % 2), (h_pad // 2, h_pad // 2 + h_pad % 2))
+                    pad_layer = [ZeroPadding2D(padding, data_format=self.layer.data_format)]
+                elif w_pad <= 0 and h_pad <= 0:
+                    w_pad *= -1
+                    h_pad *= -1
+                    # padding = ((0, -w_pad), (0, -h_pad))
+                    cropping = ((w_pad // 2, w_pad // 2 + w_pad % 2), (h_pad // 2, h_pad // 2 + h_pad % 2))
+                    pad_layer = [Cropping2D(cropping, data_format=self.layer.data_format)]
+                elif w_pad > 0 and h_pad < 0:
+                    h_pad *= -1
+                    padding = ((w_pad // 2, w_pad // 2 + w_pad % 2), (0, 0))
+                    cropping = ((0, 0), (h_pad // 2, h_pad // 2 + h_pad % 2))
+                    pad_layer = [
+                        ZeroPadding2D(padding, data_format=self.layer.data_format),
+                        Cropping2D(cropping, data_format=self.layer.data_format),
+                    ]
+                else:
+                    w_pad *= -1
+                    padding = ((0, 0), (h_pad // 2, h_pad // 2 + h_pad % 2))
+                    cropping = ((w_pad // 2, w_pad // 2 + w_pad % 2), (0, 0))
+                    pad_layer = [
+                        ZeroPadding2D(padding, data_format=self.layer.data_format),
+                        Cropping2D(cropping, data_format=self.layer.data_format),
+                    ]
+                #pad_layers=pad_layer
+
+
 
         # average pooling is a depthwise convolution
         # we use convtranspose to invert the convolution of kernel ([1/n..1/n]..[1/n..1/n]) with n the pool size
@@ -40,7 +85,7 @@ class BackwardAveragePooling2D(BackwardLinearLayer):
             1,
             layer.pool_size,
             strides=layer.strides,
-            padding=self.layer.padding,
+            padding="valid",
             data_format=layer.data_format,
             use_bias=False,
             trainable=False,
@@ -48,6 +93,7 @@ class BackwardAveragePooling2D(BackwardLinearLayer):
         kernel_ = np.ones(pool_size + [1, 1]) / np.prod(pool_size)
         layer_t.kernel = keras.Variable(kernel_)
         layer_t.built = True
+
 
         # shape of transposed input
         input_shape_t = list(layer_t(self.layer.output).shape[1:])
@@ -61,10 +107,36 @@ class BackwardAveragePooling2D(BackwardLinearLayer):
             h_pad = input_shape[1] - input_shape_t[1]
 
         if w_pad or h_pad:
-            padding = ((0, w_pad), (0, h_pad))
-            self.model = Sequential([layer_t, ZeroPadding2D(padding, data_format=self.layer.data_format)])
+            # add padding
+            if w_pad >= 0 and h_pad >= 0:
+                padding = ((w_pad // 2, w_pad // 2 + w_pad % 2), (h_pad // 2, h_pad // 2 + h_pad % 2))
+                pad_layer = [ZeroPadding2D(padding, data_format=self.layer.data_format)]
+            elif w_pad <= 0 and h_pad <= 0:
+                w_pad *= -1
+                h_pad *= -1
+                # padding = ((0, -w_pad), (0, -h_pad))
+                cropping = ((w_pad // 2, w_pad // 2 + w_pad % 2), (h_pad // 2, h_pad // 2 + h_pad % 2))
+                pad_layer = [Cropping2D(cropping, data_format=self.layer.data_format)]
+            elif w_pad > 0 and h_pad < 0:
+                h_pad *= -1
+                padding = ((w_pad // 2, w_pad // 2 + w_pad % 2), (0, 0))
+                cropping = ((0, 0), (h_pad // 2, h_pad // 2 + h_pad % 2))
+                pad_layer = [
+                    ZeroPadding2D(padding, data_format=self.layer.data_format),
+                    Cropping2D(cropping, data_format=self.layer.data_format),
+                ]
+            else:
+                w_pad *= -1
+                padding = ((0, 0), (h_pad // 2, h_pad // 2 + h_pad % 2))
+                cropping = ((w_pad // 2, w_pad // 2 + w_pad % 2), (0, 0))
+                pad_layer = [
+                    ZeroPadding2D(padding, data_format=self.layer.data_format),
+                    Cropping2D(cropping, data_format=self.layer.data_format),
+                ]
+            self.model = Sequential([layer_t]+pad_layer)
         else:
             self.model = Sequential([layer_t])
+        
         self.model(self.layer.output)
         self.model.trainable = False
         self.model.built = True

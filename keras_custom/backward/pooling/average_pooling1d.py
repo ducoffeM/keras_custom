@@ -27,9 +27,8 @@ class BackwardAveragePooling1D(BackwardLinearLayer):
         layer: AveragePooling1D,
         **kwargs,
     ):
-        super().__init__(**kwargs)
+        super().__init__(layer=layer, **kwargs)
 
-        self.layer = layer
         if not self.layer.built:
             raise ValueError("layer {} is not built".format(layer.name))
 

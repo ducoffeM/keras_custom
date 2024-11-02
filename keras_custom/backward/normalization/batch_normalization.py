@@ -21,21 +21,6 @@ class BackwardBatchNormalization(BackwardLinearLayer):
     output = backward_layer(input_tensor)
     """
 
-    def __init__(
-        self,
-        layer:BatchNormalization,
-        use_bias:bool=True,
-        **kwargs,
-    ):
-        super().__init__(**kwargs)
-
-        self.layer = layer
-        self.use_bias = use_bias
-
-
-    def compute_output_shape(self, input_shape):
-        return self.layer.compute_output_shape(input_shape)
-
     # serialize ...
 
     def call(self, inputs, training=None, mask=None):
@@ -120,7 +105,6 @@ def get_backward_BatchNormalization(layer: BatchNormalization, use_bias=True) ->
     backward_layer = get_backward_BatchNormalization(batch_norm_layer, use_bias=True)
     output = backward_layer(input_tensor)
     """
-
     layer_backward = BackwardBatchNormalization(layer=layer, use_bias=use_bias)
 
     return layer_backward
