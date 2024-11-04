@@ -11,6 +11,7 @@ from keras.layers import (
     Dense,
     Layer,
     Conv2D,
+    Conv1D,
     DepthwiseConv1D,
     DepthwiseConv2D,
     ZeroPadding1D,
@@ -45,6 +46,7 @@ from keras.layers import (
 from keras_custom.backward import (
     get_backward_BatchNormalization,
     get_backward_Conv2D,
+    get_backward_Conv1D,
     get_backward_DepthwiseConv1D,
     get_backward_DepthwiseConv2D,
     get_backward_MulConstant,
@@ -74,6 +76,7 @@ BACKWARD_PREFIX = "get_backward"
 default_mapping_keras2backward_layer: dict[type[Layer], type[callable]]={
     # convolution
     Conv2D: get_backward_Conv2D,
+    Conv1D: get_backward_Conv1D,
     DepthwiseConv1D:get_backward_DepthwiseConv1D,
     DepthwiseConv2D:get_backward_DepthwiseConv2D,
     # reshaping

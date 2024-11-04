@@ -1,5 +1,6 @@
 from .convolutional import (
     get_backward_Conv2D,
+    get_backward_Conv1D,
     get_backward_DepthwiseConv2D,
     get_backward_DepthwiseConv1D,
 )

@@ -4,6 +4,7 @@ from keras.layers import AveragePooling2D, Conv2DTranspose, ZeroPadding2D, Cropp
 from keras.models import Sequential
 import keras.ops as K
 from keras_custom.backward.layer import BackwardLinearLayer
+from keras_custom.backward.utils import pooling_layer2D
 
 
 class BackwardAveragePooling2D(BackwardLinearLayer):
@@ -31,52 +32,11 @@ class BackwardAveragePooling2D(BackwardLinearLayer):
 
         if not self.layer.built:
             raise ValueError("layer {} is not built".format(layer.name))
-        
-        # conv_layer
-        pad_layers=[]
-        if layer.padding == 'same':
-            config = self.layer.get_config()
-            config['padding']='valid'
-            fake_layer = AveragePooling2D.from_config(config)
-            output_shape_pad_same = list(fake_layer(layer.input).shape[1:])
-            output_shape = list(layer.output.shape[1:])
-            if layer.data_format == "channels_first":
-                w_pad = output_shape_pad_same[-2] - output_shape[-2]
-                h_pad = output_shape_pad_same[-1] - output_shape[-1]
-            else:
-                w_pad = output_shape_pad_same[0] - output_shape[0]
-                h_pad = output_shape_pad_same[1] - output_shape[1]
 
-            if w_pad or h_pad:
-                # add padding
-                if w_pad >= 0 and h_pad >= 0:
-                    padding = ((w_pad // 2, w_pad // 2 + w_pad % 2), (h_pad // 2, h_pad // 2 + h_pad % 2))
-                    pad_layer = [ZeroPadding2D(padding, data_format=self.layer.data_format)]
-                elif w_pad <= 0 and h_pad <= 0:
-                    w_pad *= -1
-                    h_pad *= -1
-                    # padding = ((0, -w_pad), (0, -h_pad))
-                    cropping = ((w_pad // 2, w_pad // 2 + w_pad % 2), (h_pad // 2, h_pad // 2 + h_pad % 2))
-                    pad_layer = [Cropping2D(cropping, data_format=self.layer.data_format)]
-                elif w_pad > 0 and h_pad < 0:
-                    h_pad *= -1
-                    padding = ((w_pad // 2, w_pad // 2 + w_pad % 2), (0, 0))
-                    cropping = ((0, 0), (h_pad // 2, h_pad // 2 + h_pad % 2))
-                    pad_layer = [
-                        ZeroPadding2D(padding, data_format=self.layer.data_format),
-                        Cropping2D(cropping, data_format=self.layer.data_format),
-                    ]
-                else:
-                    w_pad *= -1
-                    padding = ((0, 0), (h_pad // 2, h_pad // 2 + h_pad % 2))
-                    cropping = ((w_pad // 2, w_pad // 2 + w_pad % 2), (0, 0))
-                    pad_layer = [
-                        ZeroPadding2D(padding, data_format=self.layer.data_format),
-                        Cropping2D(cropping, data_format=self.layer.data_format),
-                    ]
-                #pad_layers=pad_layer
-
-
+        if self.layer.padding == "same":
+            raise NotImplementedError(
+                "Padding same with AveragePooling is not reperoductible in pure keras operations. See github issue https://github.com/mil-tokyo/webdnn/issues/694"
+            )
 
         # average pooling is a depthwise convolution
         # we use convtranspose to invert the convolution of kernel ([1/n..1/n]..[1/n..1/n]) with n the pool size
@@ -94,7 +54,6 @@ class BackwardAveragePooling2D(BackwardLinearLayer):
         layer_t.kernel = keras.Variable(kernel_)
         layer_t.built = True
 
-
         # shape of transposed input
         input_shape_t = list(layer_t(self.layer.output).shape[1:])
         input_shape = list(self.layer.input.shape[1:])
@@ -106,45 +65,18 @@ class BackwardAveragePooling2D(BackwardLinearLayer):
             w_pad = input_shape[0] - input_shape_t[0]
             h_pad = input_shape[1] - input_shape_t[1]
 
-        if w_pad or h_pad:
-            # add padding
-            if w_pad >= 0 and h_pad >= 0:
-                padding = ((w_pad // 2, w_pad // 2 + w_pad % 2), (h_pad // 2, h_pad // 2 + h_pad % 2))
-                pad_layer = [ZeroPadding2D(padding, data_format=self.layer.data_format)]
-            elif w_pad <= 0 and h_pad <= 0:
-                w_pad *= -1
-                h_pad *= -1
-                # padding = ((0, -w_pad), (0, -h_pad))
-                cropping = ((w_pad // 2, w_pad // 2 + w_pad % 2), (h_pad // 2, h_pad // 2 + h_pad % 2))
-                pad_layer = [Cropping2D(cropping, data_format=self.layer.data_format)]
-            elif w_pad > 0 and h_pad < 0:
-                h_pad *= -1
-                padding = ((w_pad // 2, w_pad // 2 + w_pad % 2), (0, 0))
-                cropping = ((0, 0), (h_pad // 2, h_pad // 2 + h_pad % 2))
-                pad_layer = [
-                    ZeroPadding2D(padding, data_format=self.layer.data_format),
-                    Cropping2D(cropping, data_format=self.layer.data_format),
-                ]
-            else:
-                w_pad *= -1
-                padding = ((0, 0), (h_pad // 2, h_pad // 2 + h_pad % 2))
-                cropping = ((w_pad // 2, w_pad // 2 + w_pad % 2), (0, 0))
-                pad_layer = [
-                    ZeroPadding2D(padding, data_format=self.layer.data_format),
-                    Cropping2D(cropping, data_format=self.layer.data_format),
-                ]
-            self.model = Sequential([layer_t]+pad_layer)
+        pad_layers = pooling_layer2D(w_pad, h_pad, self.layer.data_format)
+
+        if len(pad_layers):
+            self.model = Sequential([layer_t] + pad_layers)
         else:
-            self.model = Sequential([layer_t])
-        
+            self.model = layer_t
         self.model(self.layer.output)
         self.model.trainable = False
         self.model.built = True
 
     def compute_output_shape(self, input_shape):
         return self.layer.input.shape
-
-    # serialize ...
 
     def call(self, inputs, training=None, mask=None):
 
@@ -164,7 +96,7 @@ class BackwardAveragePooling2D(BackwardLinearLayer):
 
 def get_backward_AveragePooling2D(layer: AveragePooling2D, use_bias=True) -> Layer:
     """
-    This function creates a `BackwardAveragePooling1D` layer based on a given `AveragePooling2D` layer. It provides
+    This function creates a `BackwardAveragePooling2D` layer based on a given `AveragePooling2D` layer. It provides
     a convenient way to obtain a backward approximation of the input `AveragePooling2D` layer, using the
     `BackwardAveragePooling2D` class to reverse the average pooling operation.
 

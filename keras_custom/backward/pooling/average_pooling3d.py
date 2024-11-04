@@ -32,6 +32,11 @@ class BackwardAveragePooling3D(BackwardLinearLayer):
         if not self.layer.built:
             raise ValueError("layer {} is not built".format(layer.name))
 
+        if self.layer.padding == "same":
+            raise NotImplementedError(
+                "Padding same with AveragePooling is not reperoductible in pure keras operations. See github issue https://github.com/mil-tokyo/webdnn/issues/694"
+            )
+
         # average pooling is a depthwise convolution
         # we use convtranspose to invert the convolution of kernel ([1/n..1/n]..[1/n..1/n]) with n the pool size
         pool_size = list(layer.pool_size)
