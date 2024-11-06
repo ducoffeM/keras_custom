@@ -2,6 +2,7 @@ from keras.layers import ZeroPadding2D, Cropping2D
 from keras.layers import Layer
 from keras_custom.backward.layer import BackwardLinearLayer
 
+
 class BackwardZeroPadding2D(BackwardLinearLayer):
     """
     This class implements a custom layer for backward pass of a `ZeroPadding2D` layer in Keras.
@@ -25,14 +26,15 @@ class BackwardZeroPadding2D(BackwardLinearLayer):
     ):
         super().__init__(layer=layer, **kwargs)
         dico_padding = layer.get_config()
-        padding = dico_padding['padding']
-        data_format = dico_padding['data_format']
+        padding = dico_padding["padding"]
+        data_format = dico_padding["data_format"]
 
         self.layer_backward = Cropping2D(cropping=padding, data_format=data_format)
         self.layer_backward.built = True
-    
+
     def call(self, inputs, training=None, mask=None):
         return self.layer_backward(inputs)
+
 
 def get_backward_ZeroPadding2D(layer: ZeroPadding2D, use_bias=True) -> Layer:
     """

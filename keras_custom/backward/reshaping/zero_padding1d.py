@@ -3,6 +3,7 @@ from keras.layers import Layer
 from keras.models import Sequential
 from keras_custom.backward.layer import BackwardLinearLayer
 
+
 class BackwardZeroPadding1D(BackwardLinearLayer):
     """
     This class implements a custom layer for backward pass of a `ZeroPadding1D` layer in Keras.
@@ -26,26 +27,24 @@ class BackwardZeroPadding1D(BackwardLinearLayer):
     ):
         super().__init__(layer=layer, **kwargs)
         dico_padding = layer.get_config()
-        padding = dico_padding['padding']
-        data_format = dico_padding['data_format']
-        if data_format=="channels_last":
+        padding = dico_padding["padding"]
+        data_format = dico_padding["data_format"]
+        if data_format == "channels_last":
             self.layer_backward = Cropping1D(cropping=padding)
             self.layer_backward.built = True
         else:
             # Cropping1D is only working on axis=1, we need to use Cropping2D instead with 0 padding along axis=1
-            layer_reshape_b = Reshape(target_shape=[1]+list(layer.output.shape[1:]))
-            layer_backward= Cropping2D(cropping=(0, padding), data_format=data_format)
+            layer_reshape_b = Reshape(target_shape=[1] + list(layer.output.shape[1:]))
+            layer_backward = Cropping2D(cropping=(0, padding), data_format=data_format)
             layer_reshape_a = Reshape(target_shape=layer.input.shape[1:])
 
             model_backward = Sequential([layer_reshape_b, layer_backward, layer_reshape_a])
-            _=model_backward(layer.output)
+            _ = model_backward(layer.output)
             self.layer_backward = model_backward
 
-        
-    
     def call(self, inputs, training=None, mask=None):
         return self.layer_backward(inputs)
-    
+
 
 def get_backward_ZeroPadding1D(layer: ZeroPadding1D, use_bias=True) -> Layer:
     """
@@ -72,6 +71,3 @@ def get_backward_ZeroPadding1D(layer: ZeroPadding1D, use_bias=True) -> Layer:
     """
 
     return BackwardZeroPadding1D(layer)
-
-
-    

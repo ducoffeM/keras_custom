@@ -73,12 +73,12 @@ logger = logging.getLogger(__name__)
 
 BACKWARD_PREFIX = "get_backward"
 
-default_mapping_keras2backward_layer: dict[type[Layer], type[callable]]={
+default_mapping_keras2backward_layer: dict[type[Layer], type[callable]] = {
     # convolution
     Conv2D: get_backward_Conv2D,
     Conv1D: get_backward_Conv1D,
-    DepthwiseConv1D:get_backward_DepthwiseConv1D,
-    DepthwiseConv2D:get_backward_DepthwiseConv2D,
+    DepthwiseConv1D: get_backward_DepthwiseConv1D,
+    DepthwiseConv2D: get_backward_DepthwiseConv2D,
     # reshaping
     ZeroPadding1D: get_backward_ZeroPadding1D,
     ZeroPadding2D: get_backward_ZeroPadding2D,
@@ -92,34 +92,35 @@ default_mapping_keras2backward_layer: dict[type[Layer], type[callable]]={
     RepeatVector: get_backward_RepeatVector,
     # normalization
     BatchNormalization: get_backward_BatchNormalization,
-    #pooling
-    AveragePooling2D:get_backward_AveragePooling2D,
-    AveragePooling1D:get_backward_AveragePooling1D,
-    AveragePooling3D:get_backward_AveragePooling3D,
-    GlobalAveragePooling2D:get_backward_GlobalAveragePooling2D,
-    GlobalAveragePooling1D:get_backward_GlobalAveragePooling1D,
-    GlobalAveragePooling3D:get_backward_GlobalAveragePooling3D,
+    # pooling
+    AveragePooling2D: get_backward_AveragePooling2D,
+    AveragePooling1D: get_backward_AveragePooling1D,
+    AveragePooling3D: get_backward_AveragePooling3D,
+    GlobalAveragePooling2D: get_backward_GlobalAveragePooling2D,
+    GlobalAveragePooling1D: get_backward_GlobalAveragePooling1D,
+    GlobalAveragePooling3D: get_backward_GlobalAveragePooling3D,
     # custom
     MulConstant: get_backward_MulConstant,
     PlusConstant: get_backward_PlusConstant,
 }
 """Default mapping between keras layers and get_backward callable"""
 
-def get_backward(layer:Layer, use_bias:bool=True):
+
+def get_backward(layer: Layer, use_bias: bool = True):
     keras_class = type(layer)
     if isinstance(layer, BackwardLinearLayer):
         if use_bias:
             return layer.layer
-        elif not hasattr(layer.layer, 'use_bias'):
+        elif not hasattr(layer.layer, "use_bias"):
             return layer.layer
         else:
             # copy layer
             config = layer.layer.get_config()
-            config['use_bias']=False
+            config["use_bias"] = False
             layer_ = layer.layer.__class__.from_config(config)
             layer_.weights = layer.layer.weights[:1]
-            layer_.built=True
+            layer_.built = True
             return layer_
-            
+
     get_backward_layer = default_mapping_keras2backward_layer.get(keras_class)
     return get_backward_layer(layer, use_bias)

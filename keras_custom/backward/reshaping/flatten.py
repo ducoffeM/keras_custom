@@ -4,6 +4,7 @@ from keras.models import Sequential
 import numpy as np
 from keras_custom.backward.layer import BackwardLinearLayer
 
+
 class BackwardFlatten(BackwardLinearLayer):
     """
     This class implements a custom layer for backward pass of a `Flatten` layer in Keras.
@@ -27,24 +28,23 @@ class BackwardFlatten(BackwardLinearLayer):
     ):
         super().__init__(layer=layer, **kwargs)
         input_shape_wo_batch = list(layer.input.shape[1:])
-        if layer.data_format=='channels_first' and len(input_shape_wo_batch)>1:
+        if layer.data_format == "channels_first" and len(input_shape_wo_batch) > 1:
             # we first permute to obtain channel_last format and then flatten
-            target_shape = input_shape_wo_batch[1:]+[input_shape_wo_batch[0]]
+            target_shape = input_shape_wo_batch[1:] + [input_shape_wo_batch[0]]
             layer_reshape = Reshape(target_shape=target_shape)
 
-            dim = [i+1 for i in range(len(input_shape_wo_batch))]
-            dim_permute = dim[1:]+[1]
-            dims_backward = np.argsort(dim_permute)+1
+            dim = [i + 1 for i in range(len(input_shape_wo_batch))]
+            dim_permute = dim[1:] + [1]
+            dims_backward = np.argsort(dim_permute) + 1
             layer_perm = Permute(dims_backward)
-            self.layer_backward= Sequential([layer_reshape, layer_perm])
+            self.layer_backward = Sequential([layer_reshape, layer_perm])
         else:
 
-            self.layer_backward= Reshape(target_shape = input_shape_wo_batch)
-        
+            self.layer_backward = Reshape(target_shape=input_shape_wo_batch)
 
-    
     def call(self, inputs, training=None, mask=None):
         return self.layer_backward(inputs)
+
 
 def get_backward_Flatten(layer: Flatten, use_bias=True) -> Layer:
     """
@@ -71,5 +71,3 @@ def get_backward_Flatten(layer: Flatten, use_bias=True) -> Layer:
     """
 
     return BackwardFlatten(layer)
-
-    

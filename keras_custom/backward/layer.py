@@ -3,6 +3,7 @@ from keras.layers import Layer
 import keras
 import numpy as np
 
+
 class BackwardLinearLayer(Layer):
     """
     A custom Keras wrapper layer that reverses the operations of a given layer.
@@ -41,7 +42,7 @@ class BackwardLinearLayer(Layer):
 
     def compute_output_shape(self, input_shape):
         return self.layer.input.shape
-    
+
     def get_config(self):
         config = super().get_config()
         layer_config = keras.saving.serialize_keras_object(self.layer)
@@ -50,7 +51,7 @@ class BackwardLinearLayer(Layer):
         dico_params["layer"] = layer_config
         dico_params["use_bias"] = self.use_bias
         # save input shape
-        dico_params["input_shape"]= keras.saving.serialize_keras_object(self.layer.input.shape[1:])
+        dico_params["input_shape"] = keras.saving.serialize_keras_object(self.layer.input.shape[1:])
         config.update(dico_params)
         return config
 

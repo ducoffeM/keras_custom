@@ -3,6 +3,7 @@ from keras.layers import Layer
 import numpy as np
 from keras_custom.backward.layer import BackwardLinearLayer
 
+
 class BackwardPermute(BackwardLinearLayer):
     """
     This class implements a custom layer for backward pass of a `Permute` layer in Keras.
@@ -26,11 +27,12 @@ class BackwardPermute(BackwardLinearLayer):
     ):
         super().__init__(layer=layer, **kwargs)
         dims = layer.dims
-        dims_invert = np.argsort(dims)+1
+        dims_invert = np.argsort(dims) + 1
         self.layer_backward = Permute(dims=dims_invert)
-         
+
     def call(self, inputs, training=None, mask=None):
         return self.layer_backward(inputs)
+
 
 def get_backward_Permute(layer: Permute, use_bias=True) -> Layer:
     """
@@ -55,5 +57,5 @@ def get_backward_Permute(layer: Permute, use_bias=True) -> Layer:
     backward_layer = get_backward_Permute(permute_layer, use_bias=True)
     output = backward_layer(input_tensor)
     """
-    
+
     return BackwardPermute(layer)

@@ -2,6 +2,7 @@ from keras.layers import Reshape
 from keras.layers import Layer
 from keras_custom.backward.layer import BackwardLinearLayer
 
+
 class BackwardReshape(BackwardLinearLayer):
     """
     This class implements a custom layer for backward pass of a `Reshape` layer in Keras.
@@ -25,8 +26,8 @@ class BackwardReshape(BackwardLinearLayer):
     ):
         super().__init__(layer=layer, **kwargs)
         input_shape_wo_batch = layer.input.shape[1:]
-        self.layer_backward = Reshape(target_shape = input_shape_wo_batch)
-         
+        self.layer_backward = Reshape(target_shape=input_shape_wo_batch)
+
     def call(self, inputs, training=None, mask=None):
         return self.layer_backward(inputs)
 
@@ -55,5 +56,3 @@ def get_backward_Reshape(layer: Reshape, use_bias=True) -> Layer:
     output = backward_layer(input_tensor)
     """
     return BackwardReshape(layer)
-
-    

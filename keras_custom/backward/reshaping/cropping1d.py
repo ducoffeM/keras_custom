@@ -3,6 +3,7 @@ from keras.layers import Layer
 import keras.ops as K
 from keras_custom.backward.layer import BackwardLinearLayer
 
+
 class BackwardCropping1D(BackwardLinearLayer):
     """
     This class implements a custom layer for backward pass of a `Cropping1D` layer in Keras.
@@ -26,12 +27,12 @@ class BackwardCropping1D(BackwardLinearLayer):
     ):
         super().__init__(layer=layer, **kwargs)
         dico_cropping = layer.get_config()
-        cropping = dico_cropping['cropping']
+        cropping = dico_cropping["cropping"]
         # axis = 1
         # warning of cropping1D: Input shape is a 3D tensor with shape (batch_size, axis_to_crop, features)
         self.layer_backward = ZeroPadding1D(padding=cropping, data_format="channels_last")
         self.layer_backward.built = True
-    
+
     def call(self, inputs, training=None, mask=None):
         return self.layer_backward(inputs)
 

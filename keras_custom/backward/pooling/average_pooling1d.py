@@ -104,7 +104,7 @@ def get_backward_AveragePooling1D(layer: AveragePooling1D, use_bias=True) -> Lay
       backward layer.
 
     ### Returns:
-    - `layer_backward`: An instance of `BackwardAveragePooling1D`, which acts as the reverse layer for the given `AveragePooling1Dn`.
+    - `layer_backward`: An instance of `BackwardAveragePooling1D`, which acts as the reverse layer for the given `AveragePooling1D`.
 
     ### Example Usage:
     ```python
