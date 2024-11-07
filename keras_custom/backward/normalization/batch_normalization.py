@@ -4,7 +4,6 @@ from keras.src import backend
 from keras.src import ops
 
 
-
 class BackwardBatchNormalization(BackwardLinearLayer):
     """
     This class implements a custom layer for backward pass of a `BatchNormalization` layer in Keras.
@@ -59,8 +58,8 @@ class BackwardBatchNormalization(BackwardLinearLayer):
             beta = None
 
         # reshape mean, variance, beta, gamme to the right shape
-        input_dim_batch = [-1]+[1]*(len(inputs.shape)-1)
-        input_dim_batch[self.layer.axis]= inputs.shape[self.layer.axis]
+        input_dim_batch = [-1] + [1] * (len(inputs.shape) - 1)
+        input_dim_batch[self.layer.axis] = inputs.shape[self.layer.axis]
 
         mean_ = ops.reshape(mean, input_dim_batch)
         variance_ = ops.reshape(variance, input_dim_batch)
@@ -71,16 +70,17 @@ class BackwardBatchNormalization(BackwardLinearLayer):
         # inputs = gamma_*z + beta_
         # thus z = (inputs-beta_)/gamma_
         # thus x = z*ops.sqrt(variance_+epsilon) + mean_
-        #z = (inputs -beta_)/gamma_
-        #x = z*ops.sqrt(variance_+self.layer.epsilon) + mean_
-        w = ops.sqrt(variance_+self.layer.epsilon)/gamma_
-        outputs = w*inputs
+        # z = (inputs -beta_)/gamma_
+        # x = z*ops.sqrt(variance_+self.layer.epsilon) + mean_
+        w = ops.sqrt(variance_ + self.layer.epsilon) / gamma_
+        outputs = w * inputs
 
         if self.use_bias:
-            b = -beta_*ops.sqrt(variance_+self.layer.epsilon)/gamma_ + mean_
-            return outputs+b
-        
+            b = -beta_ * ops.sqrt(variance_ + self.layer.epsilon) / gamma_ + mean_
+            return outputs + b
+
         return outputs
+
 
 def get_backward_BatchNormalization(layer: BatchNormalization, use_bias=True) -> Layer:
     """
