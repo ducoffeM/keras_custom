@@ -1,28 +1,28 @@
-from keras.layers import Conv2D, Conv2DTranspose
+from keras.layers import Conv3D, Conv3DTranspose
 from keras.layers import Layer
 from keras.models import Sequential
-from keras_custom.backward.utils import compute_output_pad, pooling_layer2D
+from keras_custom.backward.utils import pooling_layer3D
 from keras_custom.backward.layer import BackwardLinearLayer
 
 
-class BackwardConv2D(BackwardLinearLayer):
+class BackwardConv3D(BackwardLinearLayer):
     """
-    This class implements a custom layer for backward pass of a `Conv2D` layer in Keras.
+    This class implements a custom layer for backward pass of a `Conv3D` layer in Keras.
     It can be used to apply operations in a reverse manner back to the original input shape.
 
     ### Example Usage:
     ```python
-    from keras.layers import Conv2D
-    from keras_custom.backward.layers import BackwardConv2D
+    from keras.layers import Conv3D
+    from keras_custom.backward.layers import BackwardConv3D
 
-    # Assume `conv_layer` is a pre-defined Conv2D layer
-    backward_layer = BackwardConv2D(conv_layer)
+    # Assume `conv_layer` is a pre-defined Conv3D layer
+    backward_layer = BackwardConv3D(conv_layer)
     output = backward_layer(input_tensor)
     """
 
     def __init__(
         self,
-        layer: Conv2D,
+        layer: Conv3D,
         use_bias: bool = True,
         **kwargs,
     ):
@@ -36,10 +36,10 @@ class BackwardConv2D(BackwardLinearLayer):
         else:
             dico_conv["filters"] = input_shape[-1]
 
-        dico_conv["use_bias"] = use_bias
+        dico_conv["use_bias"] = self.use_bias
         dico_conv["padding"] = "valid"
 
-        layer_backward = Conv2DTranspose.from_config(dico_conv)
+        layer_backward = Conv3DTranspose.from_config(dico_conv)
         layer_backward.kernel = layer.kernel
         if use_bias:
             layer_backward.bias = layer.bias
@@ -50,13 +50,15 @@ class BackwardConv2D(BackwardLinearLayer):
         input_shape_wo_batch_wo_pad = list(layer_backward(layer.output)[0].shape)
 
         if layer.data_format == "channels_first":
+            d_pad = input_shape_wo_batch[1] - input_shape_wo_batch_wo_pad[1]
+            w_pad = input_shape_wo_batch[2] - input_shape_wo_batch_wo_pad[2]
+            h_pad = input_shape_wo_batch[3] - input_shape_wo_batch_wo_pad[3]
+        else:
+            d_pad = input_shape_wo_batch[0] - input_shape_wo_batch_wo_pad[0]
             w_pad = input_shape_wo_batch[1] - input_shape_wo_batch_wo_pad[1]
             h_pad = input_shape_wo_batch[2] - input_shape_wo_batch_wo_pad[2]
-        else:
-            w_pad = input_shape_wo_batch[0] - input_shape_wo_batch_wo_pad[0]
-            h_pad = input_shape_wo_batch[1] - input_shape_wo_batch_wo_pad[1]
 
-        pad_layers = pooling_layer2D(w_pad, h_pad, layer.data_format)
+        pad_layers = pooling_layer3D(d_pad, w_pad, h_pad, layer.data_format)
         if len(pad_layers):
             layer_backward = Sequential([layer_backward] + pad_layers)
             _ = layer_backward(layer.output)
@@ -66,27 +68,27 @@ class BackwardConv2D(BackwardLinearLayer):
         return self.layer_backward(inputs)
 
 
-def get_backward_Conv2D(layer: Conv2D, use_bias=True) -> Layer:
+def get_backward_Conv3D(layer: Conv3D, use_bias=True) -> Layer:
     """
-    This function creates a `BackwardConv2D` layer based on a given `Conv2D` layer. It provides
-    a convenient way to obtain the ackward pass of the input `Conv2D` layer, using the
-    `BackwardConv2D` class to reverse the convolution operation.
+    This function creates a `BackwardConv3D` layer based on a given `Conv3D` layer. It provides
+    a convenient way to obtain the ackward pass of the input `Conv3D` layer, using the
+    `BackwardConv3D` class to reverse the convolution operation.
 
     ### Parameters:
-    - `layer`: A Keras `Conv2D` layer instance. The function uses this layer's configurations to set up the `BackwardConv2D` layer.
+    - `layer`: A Keras `Conv3D` layer instance. The function uses this layer's configurations to set up the `BackwardConv3D` layer.
     - `use_bias`: Boolean, optional (default=True). Specifies whether the bias should be included in the
       backward layer.
 
     ### Returns:
-    - `layer_backward`: An instance of `BackwardConv2D`, which acts as the reverse layer for the given `Conv2D`.
+    - `layer_backward`: An instance of `BackwardConv3D`, which acts as the reverse layer for the given `Conv3D`.
 
     ### Example Usage:
     ```python
-    from keras.layers import Conv2D
-    from keras_custom.backward import get_backward_Conv2D
+    from keras.layers import Conv3D
+    from keras_custom.backward import get_backward_Conv3D
 
-    # Assume `conv_layer` is a pre-defined Conv2D layer
-    backward_layer = get_backward_Conv2D(conv_layer, use_bias=True)
+    # Assume `conv_layer` is a pre-defined Conv3D layer
+    backward_layer = get_backward_Conv3D(conv_layer, use_bias=True)
     output = backward_layer(input_tensor)
     """
-    return BackwardConv2D(layer, use_bias)
+    return BackwardConv3D(layer, use_bias)

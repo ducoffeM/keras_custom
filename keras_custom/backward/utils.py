@@ -1,5 +1,5 @@
 from typing import List, Union
-from keras.layers import ZeroPadding2D, Cropping2D, ZeroPadding1D, Cropping1D, ZeroPadding3D, Cropping3D
+from keras.layers import ZeroPadding2D, Cropping2D, ZeroPadding1D, Cropping1D, ZeroPadding3D, Cropping3D, Permute
 import keras.ops as K
 
 
@@ -56,12 +56,17 @@ def pooling_layer1D(w_pad, data_format) -> List[Union[ZeroPadding1D, Cropping1D]
         # add padding
         if w_pad >= 0:
             padding = (w_pad // 2, w_pad // 2 + w_pad % 2)
-            pad_layer = [ZeroPadding1D(padding)]
+            pad_layer = [ZeroPadding1D(padding, data_format=data_format)]
         else:
             w_pad *= -1
             # padding = ((0, -w_pad), (0, -h_pad))
             cropping = (w_pad // 2, w_pad // 2 + w_pad % 2)
-            pad_layer = [Cropping1D(cropping)]
+            if data_format == "channels_first":
+                # we need to permute the layer to apply Cropping on the right dimensions
+                perm_layer = Permute((2, 1))
+                pad_layer = [perm_layer, Cropping1D(cropping), perm_layer]
+            else:
+                pad_layer = [Cropping1D(cropping)]
         return pad_layer
     return []
 

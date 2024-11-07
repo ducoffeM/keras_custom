@@ -1,5 +1,6 @@
-from keras.layers import Layer, DepthwiseConv2D, Conv2DTranspose, Reshape, ZeroPadding2D, Cropping2D
+from keras.layers import Layer, DepthwiseConv2D, Conv2DTranspose, Reshape
 from keras_custom.backward.layer import BackwardLinearLayer
+from keras_custom.backward.utils import pooling_layer2D, call_backward_depthwise2d
 from keras.models import Sequential
 import keras.ops as K
 
@@ -36,20 +37,25 @@ class BackwardDepthwiseConv2D(BackwardLinearLayer):
         if self.layer.data_format == "channels_first":
             c_in = input_dim_wo_batch[0]
             w_out, h_out = output_dim_wo_batch[-2:]
-            target_shape = [self.layer.depth_multiplier, c_in, w_out, h_out]
+            # target_shape = [self.layer.depth_multiplier, c_in, w_out, h_out]
+            target_shape = [c_in, self.layer.depth_multiplier, w_out, h_out]
 
             split_shape = [self.layer.depth_multiplier, w_out, h_out]
             self.axis = 1
             self.c_in = c_in
-            self.axis_c = 2
+            # self.axis_c = 2
+            self.axis_c = 1
         else:
             c_in = input_dim_wo_batch[-1]
             w_out, h_out = output_dim_wo_batch[:2]
-            target_shape = [w_out, h_out, c_in, self.layer.depth_multiplier]
+            # target_shape = [w_out, h_out, c_in, self.layer.depth_multiplier]
+            target_shape = [w_out, h_out, self.layer.depth_multiplier, c_in]
+
             split_shape = [w_out, h_out, self.layer.depth_multiplier]
             self.axis = -1
             self.c_in = c_in
-            self.axis_c = -2
+            # self.axis_c = -2
+            self.axis_c = -1
 
         self.op_reshape = Reshape(target_shape)
         self.op_split = Reshape(split_shape)
@@ -65,7 +71,7 @@ class BackwardDepthwiseConv2D(BackwardLinearLayer):
             dico_depthwise_conv["kernel_initializer"] = dico_depthwise_conv["depthwise_initializer"]
             dico_depthwise_conv["kernel_regularizer"] = dico_depthwise_conv["depthwise_regularizer"]
             dico_depthwise_conv["kernel_constraint"] = dico_depthwise_conv["depthwise_constraint"]
-            dico_depthwise_conv["padding"] = "valid"
+            dico_depthwise_conv["padding"] = "valid"  # self.layer.padding
 
             # remove unknown features in Conv2DTranspose
             dico_depthwise_conv.pop("depth_multiplier")
@@ -89,69 +95,31 @@ class BackwardDepthwiseConv2D(BackwardLinearLayer):
             w_pad = input_dim_wo_batch[0] - input_dim_wo_batch_t[0]
             h_pad = input_dim_wo_batch[1] - input_dim_wo_batch_t[1]
 
-        if w_pad or h_pad:
-            # add padding
-            if w_pad >= 0 and h_pad >= 0:
-                padding = ((w_pad // 2, w_pad // 2 + w_pad % 2), (h_pad // 2, h_pad // 2 + h_pad % 2))
-                pad_layer = [ZeroPadding2D(padding, data_format=self.layer.data_format)]
-            elif w_pad <= 0 and h_pad <= 0:
-                w_pad *= -1
-                h_pad *= -1
-                # padding = ((0, -w_pad), (0, -h_pad))
-                cropping = ((w_pad // 2, w_pad // 2 + w_pad % 2), (h_pad // 2, h_pad // 2 + h_pad % 2))
-                pad_layer = [Cropping2D(cropping, data_format=self.layer.data_format)]
-            elif w_pad > 0 and h_pad < 0:
-                h_pad *= -1
-                padding = ((w_pad // 2, w_pad // 2 + w_pad % 2), (0, 0))
-                cropping = ((0, 0), (h_pad // 2, h_pad // 2 + h_pad % 2))
-                pad_layer = [
-                    ZeroPadding2D(padding, data_format=self.layer.data_format),
-                    Cropping2D(cropping, data_format=self.layer.data_format),
-                ]
-            else:
-                w_pad *= -1
-                padding = ((0, 0), (h_pad // 2, h_pad // 2 + h_pad % 2))
-                cropping = ((w_pad // 2, w_pad // 2 + w_pad % 2), (0, 0))
-                pad_layer = [
-                    ZeroPadding2D(padding, data_format=self.layer.data_format),
-                    Cropping2D(cropping, data_format=self.layer.data_format),
-                ]
-            self.inner_models = [Sequential([conv_t_i] + pad_layer) for conv_t_i in conv_transpose_list]
+        pad_layers = pooling_layer2D(w_pad, h_pad, layer.data_format)
+        if len(pad_layers):
+            self.inner_models = [Sequential([conv_t_i] + pad_layers) for conv_t_i in conv_transpose_list]
         else:
             self.inner_models = conv_transpose_list
 
-
-    def compute_output_shape(self, input_shape):
-        return self.layer.input.shape
-
-    # serialize ...
-
     def call(self, inputs, training=None, mask=None):
 
-        # remove bias if needed
-        if self.layer.use_bias and self.use_bias:
-            if self.layer.data_format == "channels_first":
-                inputs = inputs - self.layer.bias[None, :, None, None]  # (batch, d_m*c_in, w_out, h_out)
-            else:
-                inputs = inputs - self.layer.bias[None, None, None, :]  # (batch, w_out, h_out, d_m*c_in)
-
-        outputs = self.op_reshape(inputs)  # (batch, d_m, c_in, w_out, h_out) if data_format=channel_first
-
-        # if self.layer.use_bias and self.use_bias:
-
-        split_outputs = K.split(outputs, self.c_in, axis=self.axis_c)  # [(batch, d_m, 1, w_out, h_out)]
-        split_outputs = [self.op_split(s_o_i) for s_o_i in split_outputs]  # [(batch_size, d_m, w_out, h_out)]
-
-        conv_outputs = [
-            self.inner_models[i](s_o_i) for (i, s_o_i) in enumerate(split_outputs)
-        ]  # [(batch_size, 1, w_in, h_in)]
-        return K.concatenate(conv_outputs, axis=self.axis)  # (batch_size, c_in, w_in, h_in)
+        return call_backward_depthwise2d(
+            inputs,
+            self.layer,
+            self.op_reshape,
+            self.op_split,
+            self.inner_models,
+            self.axis,
+            self.axis_c,
+            self.c_in,
+            self.use_bias,
+        )
 
 
 def get_backward_DepthwiseConv2D(layer: DepthwiseConv2D, use_bias=True) -> Layer:
     """
     This function creates a `BackwardDepthwiseConv2D` layer based on a given `DepthwiseConv2D` layer. It provides
-    a convenient way to obtain a backward approximation of the input `DepthwiseConv2D` layer, using the
+    a convenient way to obtain a backward pass of the input `DepthwiseConv2D` layer, using the
     `BackwardDepthwiseConv2D` class to reverse the convolution operation.
 
     ### Parameters:
