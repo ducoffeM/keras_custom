@@ -27,4 +27,6 @@ from .pooling import (
     get_backward_GlobalAveragePooling3D,
 )
 
-from .convert import get_backward
+from .core import get_backward_Dense
+
+from .layers.convert import get_backward
