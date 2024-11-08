@@ -1,7 +1,7 @@
 import logging
 from typing import Any, Optional
 
-from keras_custom.layers import MulConstant, PlusConstant
+from keras_custom.layers import MulConstant, PlusConstant, Linear
 from keras_custom.backward.layer import BackwardLinearLayer
 from keras.layers import (
     Activation,
@@ -69,6 +69,35 @@ from keras_custom.backward import (
     get_backward_GlobalAveragePooling3D,
 )
 
+
+# define BackwardLinear here to avoid circular import
+def convert_to_backward(layer, use_bias):
+    if isinstance(layer, BackwardLinearLayer):
+        layer_backward = BackwardLinear(layer, use_bias)
+    else:
+        layer_backward = get_backward(layer, use_bias)
+    return layer_backward
+
+
+class BackwardLinear(BackwardLinearLayer):
+    def __init__(
+        self,
+        layer: Linear,
+        use_bias: bool,
+        **kwargs,
+    ):
+        super().__init__(layer=layer, use_bias=use_bias, **kwargs)
+        layers_backward = [convert_to_backward(layer, self.use_bias) for layer in self.layer.layers][::-1]
+        self.layer_backward = Linear(layers_backward)
+
+    def call(self, inputs, training=None, mask=None):
+        return self.layer_backward(inputs)
+
+
+def get_backward_Linear(layer: Linear, use_bias=True) -> Layer:
+    return BackwardLinear(layer, use_bias)
+
+
 logger = logging.getLogger(__name__)
 
 BACKWARD_PREFIX = "get_backward"
@@ -102,6 +131,7 @@ default_mapping_keras2backward_layer: dict[type[Layer], type[callable]] = {
     # custom
     MulConstant: get_backward_MulConstant,
     PlusConstant: get_backward_PlusConstant,
+    Linear: get_backward_Linear,
 }
 """Default mapping between keras layers and get_backward callable"""
 
