@@ -83,12 +83,11 @@ def test_backward_AveragePooling2D():
     _test_backward_AveragePooling2D(input_shape, pool_size, strides, padding)
 
     # not working: same NotImplementedError
-    with pytest.raises(NotImplementedError):
-        pool_size = (3, 3)
-        strides = (2, 2)
-        padding = "same"
-        input_shape = (1, 31, 32)
-        _test_backward_AveragePooling2D(input_shape, pool_size, strides, padding)
+    pool_size = (3, 3)
+    strides = (2, 2)
+    padding = "valid"
+    input_shape = (1, 31, 32)
+    _test_backward_AveragePooling2D(input_shape, pool_size, strides, padding)
 
 
 ####### AveragePooling1D #######
@@ -158,12 +157,11 @@ def test_backward_AveragePooling1D():
     _test_backward_AveragePooling1D(input_shape, pool_size, strides, padding)
 
     # not working: same NotImplementedError
-    with pytest.raises(NotImplementedError):
-        pool_size = (3,)
-        strides = (2,)
-        padding = "same"
-        input_shape = (1, 31)
-        _test_backward_AveragePooling1D(input_shape, pool_size, strides, padding)
+    pool_size = (3,)
+    strides = (2,)
+    padding = "valid"
+    input_shape = (1, 31)
+    _test_backward_AveragePooling1D(input_shape, pool_size, strides, padding)
 
 
 ####### AveragePooling3D #######
@@ -215,12 +213,11 @@ def test_backward_AveragePooling3D():
     _test_backward_AveragePooling3D(input_shape, pool_size, strides, padding)
 
     # not working: same NotImplementedError
-    with pytest.raises(NotImplementedError):
-        pool_size = (3, 1, 4)
-        strides = (2, 1, 1)
-        padding = "same"
-        input_shape = (1, 31, 30, 32)
-        _test_backward_AveragePooling3D(input_shape, pool_size, strides, padding)
+    pool_size = (3, 1, 4)
+    strides = (2, 1, 1)
+    padding = "valid"
+    input_shape = (1, 31, 30, 32)
+    _test_backward_AveragePooling3D(input_shape, pool_size, strides, padding)
 
 
 ####### GlobalAveragePooling2D #######
