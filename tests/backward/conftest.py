@@ -5,6 +5,7 @@ import keras
 from keras.models import Sequential
 import torch
 
+from keras_custom.backward.models import is_linear
 
 
 def is_invertible(layer, backward_layer):
@@ -59,20 +60,78 @@ def serialize(layer, backward_layer):
     try:
         np.testing.assert_almost_equal(output_before_export, output_after_export, err_msg="corrupted weights")
     except:
-        import pdb; pdb.set_trace()
+        import pdb
 
-def compute_backward(input_shape, model, backward_model):
-    input_ = torch.ones((1, input_shape[0]), requires_grad=True)
-    #input_ = torch.randn(1, input_shape[0], requires_grad=True)
+        pdb.set_trace()
+
+
+def serialize_model(list_input_dim, backward_model):
+
+    batch_size = 10
+    inputs = []
+    for input_dim in list_input_dim:
+        input_random = np.reshape(np.random.rand(input_dim * batch_size), [batch_size, input_dim])
+        inputs.append(input_random)
+
+    if len(inputs) == 1:
+        inputs = inputs[0]
+
+    filename = "test_serialize_{}_{}.keras".format(backward_model.__class__.__name__, backward_model.name)
+    # detach toy model to cpu
+    # toy_model.to('cpu')
+    output_before_export = backward_model.predict(inputs)
+    backward_model.save(filename)  # The file needs to end with the .keras extension
+
+    # deserialize
+    load_model = keras.models.load_model(filename)
+
+    # compare with the previous output
+    import pdb
+
+    pdb.set_trace()
+
+    output_after_export = load_model.predict(inputs)
+    os.remove(filename)
+    np.testing.assert_almost_equal(output_before_export, output_after_export, err_msg="corrupted weights")
+
+
+def compute_backward_layer(input_shape, model, backward_model, input_random=False):
+    if input_random:
+        input_ = torch.randn(1, input_shape[0], requires_grad=True)
+    else:
+        input_ = torch.ones((1, input_shape[0]), requires_grad=True)
+
     output = model(input_)
-    select_output = output[0,0]
+    select_output = output[0, 0]
     select_output.backward()
     gradient = input_.grad.cpu().detach().numpy()
 
-    mask_output = torch.Tensor([1]+[0]*31)[None]
+    mask_output = torch.Tensor([1] + [0] * 31)[None]
 
     gradient_ = backward_model([mask_output, input_]).cpu().detach().numpy()
-    import pdb; pdb.set_trace()
+    assert_almost_equal(gradient, gradient_)
 
 
+def compute_backward_model(input_shape, model, backward_model):
+    input_ = torch.randn(np.prod(input_shape), requires_grad=True)
+    input_reshape = torch.reshape(input_, [1] + list(input_shape))
+    output = model(input_reshape)
 
+    select_output = output[0, 0]
+    select_output.backward()
+    gradient = input_.grad.cpu().detach().numpy()
+
+    mask_output = torch.Tensor([1] + [0] * (output.shape[-1] - 1))[None]
+
+    if is_linear(backward_model):
+        gradient_ = backward_model(mask_output).cpu().detach().numpy()
+    else:
+        gradient_ = backward_model([input_reshape, mask_output]).cpu().detach().numpy()
+    try:
+        assert_almost_equal(gradient, gradient_[0])
+    except:
+        import pdb
+
+        pdb.set_trace()
+
+    # f(g(x)) = g'(x)*f'(g(x))

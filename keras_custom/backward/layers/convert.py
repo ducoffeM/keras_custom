@@ -41,7 +41,10 @@ from keras.layers import (
     GlobalAveragePooling3D,
     MaxPooling2D,
     Dropout,
-    ReLU
+    ReLU,
+    LeakyReLU,
+    PReLU,
+    ELU,
 )
 
 from keras_custom.backward.layers import (
@@ -69,7 +72,11 @@ from keras_custom.backward.layers import (
     get_backward_GlobalAveragePooling1D,
     get_backward_GlobalAveragePooling3D,
     get_backward_Dense,
-    get_backward_ReLU
+    get_backward_ReLU,
+    get_backward_LeakyReLU,
+    get_backward_PReLU,
+    get_backward_ELU,
+    get_backward_Activation,
 )
 
 
@@ -134,7 +141,11 @@ default_mapping_keras2backward_layer: dict[type[Layer], type[callable]] = {
     # core
     Dense: get_backward_Dense,
     # activations
+    Activation: get_backward_Activation,
     ReLU: get_backward_ReLU,
+    LeakyReLU: get_backward_LeakyReLU,
+    PReLU: get_backward_PReLU,
+    ELU: get_backward_ELU,
     # custom
     MulConstant: get_backward_MulConstant,
     PlusConstant: get_backward_PlusConstant,

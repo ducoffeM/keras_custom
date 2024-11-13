@@ -29,5 +29,10 @@ from .pooling import (
 
 from .core import get_backward_Dense
 
-from .activations import get_backward_ReLU
-
+from .activations import (
+    get_backward_ReLU,
+    get_backward_LeakyReLU,
+    get_backward_PReLU,
+    get_backward_ELU,
+    get_backward_Activation,
+)
