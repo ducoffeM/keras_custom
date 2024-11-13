@@ -3,6 +3,7 @@ import keras
 from keras.layers import Layer, GlobalAveragePooling3D
 import keras.ops as K
 from keras_custom.backward.layers.layer import BackwardLinearLayer
+from keras_custom.backward.layers.utils import reshape_to_batch
 
 
 class BackwardGlobalAveragePooling3D(Layer):
@@ -23,16 +24,18 @@ class BackwardGlobalAveragePooling3D(Layer):
 
     def call(self, inputs, training=None, mask=None):
 
+        reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
+
         if self.layer.data_format == "channels_first":
             d_in, w_in, h_in = self.layer.input.shape[-3:]
             if self.layer.keepdims:
-                return K.repeat(
+                output= K.repeat(
                     K.repeat(K.repeat(inputs, d_in, -3), w_in, -2),
                     h_in,
                     -1,
                 ) / (w_in * h_in * d_in)
             else:
-                return K.repeat(
+                output= K.repeat(
                     K.repeat(
                         K.repeat(K.expand_dims(K.expand_dims(K.expand_dims(inputs, -1), -1), -1), d_in, -3), w_in, -2
                     ),
@@ -42,17 +45,21 @@ class BackwardGlobalAveragePooling3D(Layer):
         else:
             d_in, w_in, h_in = self.layer.input.shape[1:4]
             if self.layer.keepdims:
-                return K.repeat(
+                output= K.repeat(
                     K.repeat(K.repeat(inputs, d_in, 1), w_in, 2),
                     h_in,
                     3,
                 ) / (w_in * h_in * d_in)
             else:
-                return K.repeat(
+                output= K.repeat(
                     K.repeat(K.repeat(K.expand_dims(K.expand_dims(K.expand_dims(inputs, 1), 1), 1), d_in, 1), w_in, 2),
                     h_in,
                     3,
                 ) / (w_in * h_in * d_in)
+        if reshape_tag:
+            output = K.reshape(output, [-1]+n_out+list(self.layer.input.shape[1:]))
+
+        return output
 
 
 def get_backward_GlobalAveragePooling3D(layer: GlobalAveragePooling3D, use_bias=True) -> Layer:

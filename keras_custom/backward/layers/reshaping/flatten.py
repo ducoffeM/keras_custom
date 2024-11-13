@@ -1,8 +1,10 @@
 from keras.layers import Flatten, Reshape, Permute
 from keras.layers import Layer
 from keras.models import Sequential
+import keras.ops as K
 import numpy as np
 from keras_custom.backward.layers.layer import BackwardLinearLayer
+from keras_custom.backward.layers.utils import reshape_to_batch
 
 
 class BackwardFlatten(BackwardLinearLayer):
@@ -43,7 +45,12 @@ class BackwardFlatten(BackwardLinearLayer):
             self.layer_backward = Reshape(target_shape=input_shape_wo_batch)
 
     def call(self, inputs, training=None, mask=None):
-        return self.layer_backward(inputs)
+        reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
+        output = self.layer_backward(inputs)
+        if reshape_tag:
+            output = K.reshape(output, [-1]+n_out+list(self.layer.input.shape[1:]))
+
+        return output
 
 
 def get_backward_Flatten(layer: Flatten, use_bias=True) -> Layer:

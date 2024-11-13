@@ -1,6 +1,7 @@
 from keras.layers import RepeatVector, Layer
 import keras.ops as K
 from keras_custom.backward.layers.layer import BackwardLinearLayer
+from keras_custom.backward.layers.utils import reshape_to_batch
 
 
 class BackwardRepeatVector(BackwardLinearLayer):
@@ -29,7 +30,12 @@ class BackwardRepeatVector(BackwardLinearLayer):
 
     def call(self, inputs, training=None, mask=None):
 
-        return K.max(inputs, axis=1)
+        reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
+        output = K.max(inputs, axis=1)
+        if reshape_tag:
+            output = K.reshape(output, [-1]+n_out+list(self.layer.input.shape[1:]))
+
+        return output
 
 
 def get_backward_RepeatVector(layer: BackwardRepeatVector, use_bias=True) -> Layer:

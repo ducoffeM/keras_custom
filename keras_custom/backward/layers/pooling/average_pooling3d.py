@@ -4,6 +4,8 @@ from keras.layers import AveragePooling3D, Conv3DTranspose, ZeroPadding3D, Layer
 from keras.models import Sequential
 import keras.ops as K
 from keras_custom.backward.layers.layer import BackwardLinearLayer
+from keras_custom.backward.layers.utils import reshape_to_batch
+
 
 
 class BackwardAveragePooling3D(BackwardLinearLayer):
@@ -80,6 +82,7 @@ class BackwardAveragePooling3D(BackwardLinearLayer):
 
     def call(self, inputs, training=None, mask=None):
 
+        reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
         # inputs (batch, channel_out, w_out, h_out)
         if self.layer.data_format == "channels_first":
             channel_out = inputs.shape[1]
@@ -91,6 +94,9 @@ class BackwardAveragePooling3D(BackwardLinearLayer):
         split_inputs = K.split(inputs, channel_out, axis)
         # apply conv transpose on every of them
         outputs = K.concatenate([self.model(input_i) for input_i in split_inputs], axis)
+        if reshape_tag:
+            outputs = K.reshape(outputs, [-1]+n_out+list(self.layer.input.shape[1:]))
+
         return outputs
 
 

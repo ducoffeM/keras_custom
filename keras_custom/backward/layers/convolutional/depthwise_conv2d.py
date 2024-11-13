@@ -1,6 +1,6 @@
 from keras.layers import Layer, DepthwiseConv2D, Conv2DTranspose, Reshape
 from keras_custom.backward.layers.layer import BackwardLinearLayer
-from keras_custom.backward.layers.utils import pooling_layer2D, call_backward_depthwise2d
+from keras_custom.backward.layers.utils import pooling_layer2D, call_backward_depthwise2d, reshape_to_batch
 from keras.models import Sequential
 import keras.ops as K
 
@@ -103,7 +103,9 @@ class BackwardDepthwiseConv2D(BackwardLinearLayer):
 
     def call(self, inputs, training=None, mask=None):
 
-        return call_backward_depthwise2d(
+        reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
+
+        output= call_backward_depthwise2d(
             inputs,
             self.layer,
             self.op_reshape,
@@ -114,6 +116,10 @@ class BackwardDepthwiseConv2D(BackwardLinearLayer):
             self.c_in,
             self.use_bias,
         )
+        if reshape_tag:
+            output = K.reshape(output, [-1]+n_out+list(self.layer.input.shape[1:]))
+
+        return output
 
 
 def get_backward_DepthwiseConv2D(layer: DepthwiseConv2D, use_bias=True) -> Layer:

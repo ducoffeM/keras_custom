@@ -1,6 +1,6 @@
 from keras.layers import Layer, DepthwiseConv3D, Conv3DTranspose, Reshape
 from keras_custom.backward.layers.layer import BackwardLinearLayer
-from keras_custom.backward.layers.utils import pooling_layer3D
+from keras_custom.backward.layers.utils import pooling_layer3D, reshape_to_batch
 from keras.models import Sequential
 import keras.ops as K
 
@@ -100,6 +100,8 @@ class BackwardDepthwiseConv3D(BackwardLinearLayer):
 
     def call(self, inputs, training=None, mask=None):
 
+        reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
+
         # remove bias if needed
         if self.layer.use_bias and self.use_bias:
             if self.layer.data_format == "channels_first":
@@ -117,7 +119,12 @@ class BackwardDepthwiseConv3D(BackwardLinearLayer):
         conv_outputs = [
             self.inner_models[i](s_o_i) for (i, s_o_i) in enumerate(split_outputs)
         ]  # [(batch_size, 1, d_in, w_in, h_in)]
-        return K.concatenate(conv_outputs, axis=self.axis)  # (batch_size, c_in, d_in, w_in, h_in)
+        output= K.concatenate(conv_outputs, axis=self.axis)  # (batch_size, c_in, d_in, w_in, h_in)
+
+        if reshape_tag:
+            output = K.reshape(output, [-1]+n_out+list(self.layer.input.shape[1:]))
+
+        return output
 
 
 def get_backward_DepthwiseConv3D(layer: DepthwiseConv3D, use_bias=True) -> Layer:

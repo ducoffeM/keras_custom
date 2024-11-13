@@ -1,7 +1,9 @@
 from keras.layers import BatchNormalization, Layer
 from keras_custom.backward.layers.layer import BackwardLinearLayer
+from keras_custom.backward.layers.utils import reshape_to_batch
 from keras.src import backend
 from keras.src import ops
+import keras
 
 
 class BackwardBatchNormalization(BackwardLinearLayer):
@@ -22,6 +24,8 @@ class BackwardBatchNormalization(BackwardLinearLayer):
 
     def call(self, inputs, training=None, mask=None):
         # Check if the mask has one less dimension than the inputs.
+        reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
+        
         if mask is not None:
             if len(mask.shape) != len(inputs.shape) - 1:
                 # Raise a value error
@@ -76,6 +80,9 @@ class BackwardBatchNormalization(BackwardLinearLayer):
         if self.use_bias:
             b = -beta_ * ops.sqrt(variance_ + self.layer.epsilon) / gamma_ + mean_
             return outputs + b
+
+        if reshape_tag:
+            outputs = keras.ops.reshape(outputs, [-1]+n_out+list(self.layer.input.shape[1:]))
 
         return outputs
 

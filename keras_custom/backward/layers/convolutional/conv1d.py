@@ -1,7 +1,8 @@
 from keras.layers import Conv1D, Conv1DTranspose
 from keras.layers import Layer
 from keras.models import Sequential
-from keras_custom.backward.layers.utils import pooling_layer1D
+import keras.ops as K
+from keras_custom.backward.layers.utils import pooling_layer1D, reshape_to_batch
 from keras_custom.backward.layers.layer import BackwardLinearLayer
 
 
@@ -62,7 +63,12 @@ class BackwardConv1D(BackwardLinearLayer):
         self.layer_backward = layer_backward
 
     def call(self, inputs, training=None, mask=None):
-        return self.layer_backward(inputs)
+        reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
+        output = self.layer_backward(inputs)
+        if reshape_tag:
+            output = K.reshape(output, [-1]+n_out+list(self.layer.input.shape[1:]))
+
+        return output
 
 
 def get_backward_Conv1D(layer: Conv1D, use_bias=True) -> Layer:

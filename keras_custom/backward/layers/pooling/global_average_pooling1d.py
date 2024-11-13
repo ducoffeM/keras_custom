@@ -3,6 +3,8 @@ import keras
 from keras.layers import Layer, GlobalAveragePooling1D
 from keras_custom.backward.layers.layer import BackwardLinearLayer
 import keras.ops as K
+from keras_custom.backward.layers.utils import reshape_to_batch
+
 
 
 class BackwardGlobalAveragePooling1D(BackwardLinearLayer):
@@ -23,18 +25,24 @@ class BackwardGlobalAveragePooling1D(BackwardLinearLayer):
 
     def call(self, inputs, training=None, mask=None):
 
+        reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
+
         if self.layer.data_format == "channels_first":
             w_in = self.layer.input.shape[-1]
             if self.layer.keepdims:
-                return K.repeat(inputs, w_in, -1) / w_in
+                output= K.repeat(inputs, w_in, -1) / w_in
             else:
-                return K.repeat(K.expand_dims(inputs, -1), w_in, -1) / w_in
+                output= K.repeat(K.expand_dims(inputs, -1), w_in, -1) / w_in
         else:
             w_in = self.layer.input.shape[1]
             if self.layer.keepdims:
-                return K.repeat(inputs, w_in, 1) / w_in
+                output= K.repeat(inputs, w_in, 1) / w_in
             else:
-                return K.repeat(K.expand_dims(inputs, 1), w_in, 1) / w_in
+                output= K.repeat(K.expand_dims(inputs, 1), w_in, 1) / w_in
+        if reshape_tag:
+            output = K.reshape(output, [-1]+n_out+list(self.layer.input.shape[1:]))
+
+        return output
 
 
 def get_backward_GlobalAveragePooling1D(layer: GlobalAveragePooling1D, use_bias=True) -> Layer:

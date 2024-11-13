@@ -1,6 +1,8 @@
 from keras.layers import ZeroPadding2D, Cropping2D
 from keras.layers import Layer
+import keras.ops as K
 from keras_custom.backward.layers.layer import BackwardLinearLayer
+from keras_custom.backward.layers.utils import reshape_to_batch
 
 
 class BackwardZeroPadding2D(BackwardLinearLayer):
@@ -33,7 +35,12 @@ class BackwardZeroPadding2D(BackwardLinearLayer):
         self.layer_backward.built = True
 
     def call(self, inputs, training=None, mask=None):
-        return self.layer_backward(inputs)
+        reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
+        output = self.layer_backward(inputs)
+        if reshape_tag:
+            output = K.reshape(output, [-1]+n_out+list(self.layer.input.shape[1:]))
+
+        return output
 
 
 def get_backward_ZeroPadding2D(layer: ZeroPadding2D, use_bias=True) -> Layer:

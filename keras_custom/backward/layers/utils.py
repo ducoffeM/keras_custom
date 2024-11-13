@@ -206,3 +206,13 @@ def init_backward_depthwise2d(layer, depth_multiplier, kernel):
         else:
             self.inner_models = conv_transpose_list
 """
+
+def reshape_to_batch(input_tensor, layer_output_shape):
+    if len(input_tensor.shape)!= len(layer_output_shape):
+        # backward is not in a diagonal format, current shape is [batch_size]+n_out+layer_output_shape
+        # we reshape it to [batch_size*np.prod(n_out_)]+layer_output_shape
+        n_out = list(input_tensor.shape[:-len(layer_output_shape[1:])][1:])
+        return True, K.reshape(input_tensor, [-1]+layer_output_shape), n_out
+    else:
+        return False, input_tensor, []
+

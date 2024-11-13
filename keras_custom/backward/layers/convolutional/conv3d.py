@@ -1,7 +1,8 @@
 from keras.layers import Conv3D, Conv3DTranspose
 from keras.layers import Layer
 from keras.models import Sequential
-from keras_custom.backward.layers.utils import pooling_layer3D
+import keras.ops as K
+from keras_custom.backward.layers.utils import pooling_layer3D, reshape_to_batch
 from keras_custom.backward.layers.layer import BackwardLinearLayer
 
 
@@ -65,13 +66,18 @@ class BackwardConv3D(BackwardLinearLayer):
         self.layer_backward = layer_backward
 
     def call(self, inputs, training=None, mask=None):
-        return self.layer_backward(inputs)
+        reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
+        output = self.layer_backward(inputs)
+        if reshape_tag:
+            output = K.reshape(output, [-1]+n_out+list(self.layer.input.shape[1:]))
+
+        return output
 
 
 def get_backward_Conv3D(layer: Conv3D, use_bias=True) -> Layer:
     """
     This function creates a `BackwardConv3D` layer based on a given `Conv3D` layer. It provides
-    a convenient way to obtain the ackward pass of the input `Conv3D` layer, using the
+    a convenient way to obtain the backward pass of the input `Conv3D` layer, using the
     `BackwardConv3D` class to reverse the convolution operation.
 
     ### Parameters:

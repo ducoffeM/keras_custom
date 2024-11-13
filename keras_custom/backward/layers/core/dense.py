@@ -1,6 +1,8 @@
 from keras_custom.backward.layers.layer import BackwardLinearLayer
+from keras_custom.backward.layers.utils import reshape_to_batch
 from keras.layers import Layer, Dense
 import keras.ops as K
+
 
 class BackwardDense(BackwardLinearLayer):
     """
@@ -26,24 +28,20 @@ class BackwardDense(BackwardLinearLayer):
         **kwargs,
     ):
         super().__init__(layer=layer, use_bias=use_bias, **kwargs)
-        """
-        if layer.use_bias and self.use_bias:
-            input_dim_wo_batch = list(self.layer.input.shape[1:])
-
-            self.bias = -self.layer(K.zeros([1]+input_dim_wo_batch))
-        else:
-            self.bias = None
-
-        self.kernel = K.transpose(self.layer.kernel)
-        """
 
     def call(self, inputs, training=None, mask=None):
+        reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
+
         if self.layer.use_bias and self.use_bias:
             input_dim_wo_batch = list(self.layer.input.shape[1:])
             x = K.add(inputs, -self.layer(K.zeros([1]+input_dim_wo_batch)))
             x = K.matmul(x, K.transpose(self.layer.kernel))
         else:
             x = K.matmul(inputs, K.transpose(self.layer.kernel))
+        
+
+        if reshape_tag:
+            x = K.reshape(x, [-1]+n_out+list(self.layer.input.shape[1:]))
 
         return x
     
