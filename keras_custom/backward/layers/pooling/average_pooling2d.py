@@ -1,6 +1,6 @@
 import numpy as np
 import keras
-from keras.layers import AveragePooling2D, Conv2DTranspose, ZeroPadding2D, Cropping2D, Layer
+from keras.layers import AveragePooling2D, Conv2DTranspose, ZeroPadding2D, Cropping2D, Layer, Input
 from keras.models import Sequential
 import keras.ops as K
 from keras_custom.backward.layers.layer import BackwardLinearLayer
@@ -54,8 +54,8 @@ class BackwardAveragePooling2D(BackwardLinearLayer):
         layer_t.built = True
 
         # shape of transposed input
-        input_shape_t = list(layer_t(self.layer.output).shape[1:])
-        input_shape = list(self.layer.input.shape[1:])
+        input_shape_t = list(layer_t(K.ones([1]+self.output_dim_wo_batch)).shape[1:])
+        input_shape = self.input_dim_wo_batch
 
         if layer.data_format == "channels_first":
             w_pad = input_shape[-2] - input_shape_t[-2]
@@ -70,7 +70,8 @@ class BackwardAveragePooling2D(BackwardLinearLayer):
             self.model = Sequential([layer_t] + pad_layers)
         else:
             self.model = layer_t
-        self.model(self.layer.output)
+        #self.model(self.layer.output)
+        self.model(Input(self.output_dim_wo_batch))
         self.model.trainable = False
         self.model.built = True
 

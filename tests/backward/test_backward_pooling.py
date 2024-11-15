@@ -5,15 +5,20 @@ from keras.layers import (
     AveragePooling3D,
     GlobalAveragePooling2D,
     GlobalAveragePooling1D,
+    MaxPooling2D
 )
 
 # comparison with depthwiseConv for AveragePooling
 from keras.layers import DepthwiseConv2D, DepthwiseConv1D
+from keras.layers import Dense, Reshape, Flatten
 from keras.models import Sequential
 from keras_custom.backward import get_backward
+from keras_custom.backward.models import get_backward_sequential
 import numpy as np
-from .conftest import linear_mapping, serialize
+from .conftest import linear_mapping, serialize, compute_backward_model, serialize_model
 import pytest
+
+import torch
 
 
 ####### AveragePooling2D #######
@@ -296,3 +301,61 @@ def test_backward_GlobalAveragePooling1D():
     input_shape = (2, 31)
     _test_backward_GlobalAveragePooling1D(input_shape, keepdims=True)
     _test_backward_GlobalAveragePooling1D(input_shape, keepdims=False)
+
+###### MaxPooling2D ######
+def _test_backward_MaxPooling2D(input_shape, pool_size, strides, padding):
+    """
+    input_shape = [3, 2, 2]
+    layer = MaxPooling2D(pool_size=pool_size, strides=strides, padding=padding, data_format="channels_first")
+    #layers = [Reshape((2, 2, 2)), layer, Reshape((-1,)), Dense(1, use_bias=False)]
+    layers = [layer, Reshape((-1,)), Dense(1, use_bias=False)]
+    model = Sequential(layers)
+    _ = model(torch.ones([1]+input_shape))
+    #_ = model(torch.ones((1, input_dim)))
+    backward_model = get_backward_sequential(model)
+    # model is not linear
+    _ = backward_model([np.ones([1]+input_shape), np.ones((1,1))])
+    compute_backward_model(input_shape, model, backward_model)
+    """
+
+    
+    # data_format == 'channels_last'
+    input_dim = 4*2
+    input_shape = (2, 2, 3)
+    layer = MaxPooling2D(pool_size=pool_size, strides=strides, padding=padding, data_format="channels_last")
+    #layers = [Reshape((2, 2, 2)), layer, Reshape((-1,)), Dense(1, use_bias=False)]
+    layers = [layer, Reshape((-1,)), Dense(1, use_bias=False)]
+    model = Sequential(layers)
+    _ = model(torch.ones((1, 2, 2, 3)))
+    #_ = model(torch.ones((1, input_dim)))
+    backward_model = get_backward_sequential(model)
+    # model is not linear
+    _ = backward_model([np.ones((1, 2, 2, 3)), np.ones((1,1))])
+    #compute_backward_model((input_dim,), model, backward_model)
+    compute_backward_model(input_shape, model, backward_model)
+    #serialize_model([input_dim], model)
+    
+
+
+def test_backward_MaxPooling2D():
+
+    pool_size = (2, 2)
+    strides = (1, 1)
+    padding = "valid"
+    input_shape = (1, 32, 32)
+    _test_backward_MaxPooling2D(input_shape, pool_size, strides, padding)
+
+    """
+    pool_size = (3, 3)
+    strides = (2, 1)
+    padding = "valid"
+    input_shape = (1, 31, 32)
+    _test_backward_AveragePooling2D(input_shape, pool_size, strides, padding)
+
+    # not working: same NotImplementedError
+    pool_size = (3, 3)
+    strides = (2, 2)
+    padding = "valid"
+    input_shape = (1, 31, 32)
+    _test_backward_AveragePooling2D(input_shape, pool_size, strides, padding)
+    """

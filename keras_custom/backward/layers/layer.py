@@ -4,6 +4,7 @@ from keras.src.layers.merging.base_merge import Merge
 import keras
 import numpy as np
 from abc import ABC, abstractmethod
+from typing import Union, List
 
 
 class BackwardLayer(Layer):
@@ -36,11 +37,22 @@ class BackwardLayer(Layer):
         self,
         layer: Layer,
         use_bias: bool = True,
+        input_dim_wo_batch:Union[None, List[int]]=None,
+        output_dim_wo_batch:Union[None, List[int]]=None,
         **kwargs,
     ):
         super().__init__(**kwargs)
         self.layer = layer
         self.use_bias = use_bias
+        if input_dim_wo_batch is None:
+            input_dim_wo_batch = list(self.layer.input.shape[1:])
+        self.input_dim_wo_batch = input_dim_wo_batch
+
+        if output_dim_wo_batch is None:
+            output_dim_wo_batch = list(self.layer.output.shape[1:])
+        self.output_dim_wo_batch = output_dim_wo_batch
+
+
 
     def get_config(self):
         config = super().get_config()
@@ -50,10 +62,13 @@ class BackwardLayer(Layer):
         dico_params["layer"] = layer_config
         dico_params["use_bias"] = self.use_bias
         # save input shape
-        dico_params["input_shape"] = keras.saving.serialize_keras_object(self.layer.input.shape[1:])
+        dico_params["input_dim_wo_batch"] = keras.saving.serialize_keras_object(self.input_dim_wo_batch)
+        dico_params["output_dim_wo_batch"] = keras.saving.serialize_keras_object(self.output_dim_wo_batch)
+
         config.update(dico_params)
 
         return config
+
 
     @classmethod
     def from_config(cls, config):
@@ -61,16 +76,22 @@ class BackwardLayer(Layer):
         use_bias = keras.saving.deserialize_keras_object(bias_config)
         layer_config = config.pop("layer")
         layer = keras.saving.deserialize_keras_object(layer_config)
-        input_shape_config = config.pop("input_shape")
-        input_shape = keras.saving.deserialize_keras_object(input_shape_config)
+
+        input_dim_wo_batch_config = config.pop("input_dim_wo_batch")
+        input_dim_wo_batch = keras.saving.deserialize_keras_object(input_dim_wo_batch_config)
+        output_dim_wo_batch_config = config.pop("output_dim_wo_batch")
+        output_dim_wo_batch = keras.saving.deserialize_keras_object(output_dim_wo_batch_config)
+        
+        #input_shape_config = config.pop("input_shape")
+        #input_shape = keras.saving.deserialize_keras_object(input_shape_config)
 
         # backward layers require the layer to have been built and have a predefined input/output shapes
         # this is why we store this information in the config file
-        _ = keras.models.Sequential([layer])(np.ones(input_shape)[None])
-        return cls(layer=layer, use_bias=use_bias, **config)
+        #_ = keras.models.Sequential([layer])(np.ones(input_shape)[None])
+        return cls(layer=layer, use_bias=use_bias, input_dim_wo_batch=input_dim_wo_batch, output_dim_wo_batch=output_dim_wo_batch, **config)
     
     def compute_output_shape(self, input_shape):
-        return self.layer.input.shape
+        return [1]+self.input_dim_wo_batch
     
  
 class BackwardLinearLayer(BackwardLayer):
@@ -98,9 +119,6 @@ class BackwardLinearLayer(BackwardLayer):
       reverses the application of operations as defined by the wrapped layer.
     - It requires the wrapped layer to have compatible reverse operations.
     """
-
-    #def call(self, inputs, training=None, mask=None):
-    #    return self.layer_backward(inputs)
     
 
 class BackwardNonLinearLayer(BackwardLayer):

@@ -49,17 +49,18 @@ def serialize(layer, backward_layer):
     # detach toy model to cpu
     # toy_model.to('cpu')
     toy_model.save(filename)  # The file needs to end with the .keras extension
-    output_before_export = toy_model.predict(input_random)
+    output_before_export = toy_model(input_random).cpu().detach().numpy()
 
     # deserialize
-    load_model = keras.models.load_model(filename)
+    load_model_ = keras.models.load_model(filename)
 
     # compare with the previous output
-    output_after_export = load_model.predict(input_random)
+    output_after_export = load_model_(input_random).cpu().detach().numpy()
     os.remove(filename)
     try:
         np.testing.assert_almost_equal(output_before_export, output_after_export, err_msg="corrupted weights")
     except:
+        
         import pdb
 
         pdb.set_trace()
@@ -86,9 +87,6 @@ def serialize_model(list_input_dim, backward_model):
     load_model = keras.models.load_model(filename)
 
     # compare with the previous output
-    import pdb
-
-    pdb.set_trace()
 
     output_after_export = load_model.predict(inputs)
     os.remove(filename)
@@ -127,11 +125,7 @@ def compute_backward_model(input_shape, model, backward_model):
         gradient_ = backward_model(mask_output).cpu().detach().numpy()
     else:
         gradient_ = backward_model([input_reshape, mask_output]).cpu().detach().numpy()
-    try:
-        assert_almost_equal(gradient, gradient_[0])
-    except:
-        import pdb
 
-        pdb.set_trace()
-
-    # f(g(x)) = g'(x)*f'(g(x))
+    gradient = np.reshape(gradient, input_shape)
+    import pdb; pdb.set_trace()
+    assert_almost_equal(gradient, gradient_[0])

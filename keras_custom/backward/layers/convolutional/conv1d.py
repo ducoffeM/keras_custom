@@ -1,4 +1,4 @@
-from keras.layers import Conv1D, Conv1DTranspose
+from keras.layers import Conv1D, Conv1DTranspose, Input
 from keras.layers import Layer
 from keras.models import Sequential
 import keras.ops as K
@@ -30,7 +30,8 @@ class BackwardConv1D(BackwardLinearLayer):
         super().__init__(layer=layer, use_bias=use_bias, **kwargs)
         dico_conv = layer.get_config()
         dico_conv.pop("groups")
-        input_shape = list(layer.input.shape[1:])
+        #input_shape = list(layer.input.shape[1:])
+        input_shape = self.input_dim_wo_batch
         # update filters to match input, pay attention to data_format
         if layer.data_format == "channels_first":  # better to use enum than raw str
             dico_conv["filters"] = input_shape[0]
@@ -47,7 +48,7 @@ class BackwardConv1D(BackwardLinearLayer):
 
         layer_backward.built = True
 
-        input_shape_wo_batch = list(layer.input.shape[1:])
+        input_shape_wo_batch = self.input_dim_wo_batch
         input_shape_wo_batch_wo_pad = list(layer_backward(layer.output)[0].shape)
 
         if layer.data_format == "channels_first":
@@ -58,7 +59,8 @@ class BackwardConv1D(BackwardLinearLayer):
         pad_layers = pooling_layer1D(w_pad, layer.data_format)
         if len(pad_layers):
             layer_backward = Sequential([layer_backward] + pad_layers)
-            _ = layer_backward(layer.output)
+            _= layer_backward(Input(self.output_dim_wo_batch))
+
 
         self.layer_backward = layer_backward
 
@@ -66,7 +68,7 @@ class BackwardConv1D(BackwardLinearLayer):
         reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
         output = self.layer_backward(inputs)
         if reshape_tag:
-            output = K.reshape(output, [-1]+n_out+list(self.layer.input.shape[1:]))
+            output = K.reshape(output, [-1]+n_out+self.input_dim_wo_batch)
 
         return output
 

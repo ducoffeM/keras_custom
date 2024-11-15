@@ -31,8 +31,10 @@ class BackwardDepthwiseConv3D(BackwardLinearLayer):
     ):
         super().__init__(layer=layer, use_bias=use_bias, **kwargs)
 
-        input_dim_wo_batch = self.layer.input.shape[1:]
-        output_dim_wo_batch = self.layer.output.shape[1:]
+        #input_dim_wo_batch = self.layer.input.shape[1:]
+        input_dim_wo_batch = self.input_dim_wo_batch
+        #output_dim_wo_batch = self.layer.output.shape[1:]
+        output_dim_wo_batch = self.output_dim_wo_batch
         self.d_m = self.layer.depth_multiplier
         if self.layer.data_format == "channels_first":
             c_in = input_dim_wo_batch[0]

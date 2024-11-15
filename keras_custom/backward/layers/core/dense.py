@@ -33,7 +33,10 @@ class BackwardDense(BackwardLinearLayer):
         reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
 
         if self.layer.use_bias and self.use_bias:
-            input_dim_wo_batch = list(self.layer.input.shape[1:])
+            inputs = inputs -self.layer(K.zeros([1]+self.output_dim_wo_batch))
+
+        if self.layer.use_bias and self.use_bias:
+            input_dim_wo_batch = list(self.output_dim_wo_batch)
             x = K.add(inputs, -self.layer(K.zeros([1]+input_dim_wo_batch)))
             x = K.matmul(x, K.transpose(self.layer.kernel))
         else:
@@ -41,7 +44,7 @@ class BackwardDense(BackwardLinearLayer):
         
 
         if reshape_tag:
-            x = K.reshape(x, [-1]+n_out+list(self.layer.input.shape[1:]))
+            x = K.reshape(x, [-1]+n_out+list(self.input_dim_wo_batch))
 
         return x
     

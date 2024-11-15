@@ -54,8 +54,10 @@ class BackwardAveragePooling3D(BackwardLinearLayer):
         layer_t.built = True
 
         # shape of transposed input
-        input_shape_t = list(layer_t(self.layer.output).shape[1:])
-        input_shape = list(self.layer.input.shape[1:])
+        #input_shape_t = list(layer_t(self.layer.output).shape[1:])
+        #input_shape = list(self.layer.input.shape[1:])
+        input_shape_t = list(layer_t(K.ones([1]+self.output_dim_wo_batch)).shape[1:])
+        input_shape = self.input_dim_wo_batch
 
         if layer.data_format == "channels_first":
             d_pad = input_shape[-3] - input_shape_t[-3]

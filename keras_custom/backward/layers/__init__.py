@@ -25,14 +25,15 @@ from .pooling import (
     get_backward_GlobalAveragePooling2D,
     get_backward_GlobalAveragePooling1D,
     get_backward_GlobalAveragePooling3D,
+    get_backward_MaxPooling2D
 )
 
-from .core import get_backward_Dense
+from .core import get_backward_Dense, get_backward_EinsumDense, get_backward_Activation
+
 
 from .activations import (
     get_backward_ReLU,
     get_backward_LeakyReLU,
     get_backward_PReLU,
     get_backward_ELU,
-    get_backward_Activation,
 )

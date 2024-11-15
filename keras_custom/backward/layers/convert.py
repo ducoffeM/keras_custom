@@ -9,6 +9,7 @@ from keras.layers import (
     Average,
     Subtract,
     Dense,
+    EinsumDense,
     Layer,
     Conv2D,
     Conv1D,
@@ -71,7 +72,9 @@ from keras_custom.backward.layers import (
     get_backward_GlobalAveragePooling2D,
     get_backward_GlobalAveragePooling1D,
     get_backward_GlobalAveragePooling3D,
+    get_backward_MaxPooling2D, 
     get_backward_Dense,
+    get_backward_EinsumDense,
     get_backward_ReLU,
     get_backward_LeakyReLU,
     get_backward_PReLU,
@@ -138,8 +141,10 @@ default_mapping_keras2backward_layer: dict[type[Layer], type[callable]] = {
     GlobalAveragePooling2D: get_backward_GlobalAveragePooling2D,
     GlobalAveragePooling1D: get_backward_GlobalAveragePooling1D,
     GlobalAveragePooling3D: get_backward_GlobalAveragePooling3D,
+    MaxPooling2D: get_backward_MaxPooling2D, 
     # core
     Dense: get_backward_Dense,
+    EinsumDense: get_backward_EinsumDense,
     # activations
     Activation: get_backward_Activation,
     ReLU: get_backward_ReLU,

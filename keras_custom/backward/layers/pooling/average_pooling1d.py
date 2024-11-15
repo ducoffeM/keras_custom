@@ -53,8 +53,10 @@ class BackwardAveragePooling1D(BackwardLinearLayer):
         layer_t.built = True
 
         # shape of transposed input
-        input_shape_t = list(layer_t(self.layer.output).shape[1:])
-        input_shape = list(self.layer.input.shape[1:])
+        #input_shape_t = list(layer_t(self.layer.output).shape[1:])
+        input_shape_t = list(layer_t(K.ones([1]+self.output_dim_wo_batch)).shape[1:])
+        #input_shape = list(self.layer.input.shape[1:])
+        input_shape = self.input_dim_wo_batch
 
         if layer.data_format == "channels_first":
             h_pad = input_shape[-1] - input_shape_t[-1]
@@ -66,7 +68,8 @@ class BackwardAveragePooling1D(BackwardLinearLayer):
             self.model = Sequential([layer_t, ZeroPadding1D(padding, data_format=self.layer.data_format)])
         else:
             self.model = Sequential([layer_t])
-        self.model(self.layer.output)
+        #self.model(self.layer.output)
+        self.model(K.ones([1]+self.output_dim_wo_batch))
         self.model.trainable = False
         self.model.built = True
 

@@ -53,4 +53,5 @@ def get_backward_sequential(model):
                 else:
                     gradient = backward_layer([gradient, input_forward])
 
+
         return Model([input_tensor, backward_input_tensor], gradient)
