@@ -57,13 +57,7 @@ def serialize(layer, backward_layer):
     # compare with the previous output
     output_after_export = load_model_(input_random).cpu().detach().numpy()
     os.remove(filename)
-    try:
-        np.testing.assert_almost_equal(output_before_export, output_after_export, err_msg="corrupted weights")
-    except:
-        
-        import pdb
-
-        pdb.set_trace()
+    np.testing.assert_almost_equal(output_before_export, output_after_export, err_msg="corrupted weights")
 
 
 def serialize_model(list_input_dim, backward_model):
@@ -124,8 +118,9 @@ def compute_backward_model(input_shape, model, backward_model):
     if is_linear(backward_model):
         gradient_ = backward_model(mask_output).cpu().detach().numpy()
     else:
-        gradient_ = backward_model([input_reshape, mask_output]).cpu().detach().numpy()
-
+        if isinstance(backward_model.input, list) and len(backward_model.input)==2:
+            gradient_ = backward_model([input_reshape, mask_output]).cpu().detach().numpy()
+        else:
+            gradient_ = backward_model(input_reshape).cpu().detach().numpy()
     gradient = np.reshape(gradient, input_shape)
-    import pdb; pdb.set_trace()
     assert_almost_equal(gradient, gradient_[0])

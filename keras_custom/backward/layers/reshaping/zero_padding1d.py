@@ -1,4 +1,4 @@
-from keras.layers import ZeroPadding1D, Cropping1D, Cropping2D, Reshape
+from keras.layers import ZeroPadding1D, Cropping1D, Cropping2D, Reshape, Input
 from keras.layers import Layer
 from keras.models import Sequential
 import keras.ops as K
@@ -36,21 +36,13 @@ class BackwardZeroPadding1D(BackwardLinearLayer):
             self.layer_backward.built = True
         else:
             # Cropping1D is only working on axis=1, we need to use Cropping2D instead with 0 padding along axis=1
-            layer_reshape_b = Reshape(target_shape=[1] + list(layer.output.shape[1:]))
+            layer_reshape_b = Reshape(target_shape=[1] + self.output_dim_wo_batch)
             layer_backward = Cropping2D(cropping=(0, padding), data_format=data_format)
-            layer_reshape_a = Reshape(target_shape=layer.input.shape[1:])
+            layer_reshape_a = Reshape(target_shape=self.input_dim_wo_batch)
 
             model_backward = Sequential([layer_reshape_b, layer_backward, layer_reshape_a])
-            _ = model_backward(layer.output)
+            _ = model_backward(Input(self.output_dim_wo_batch))
             self.layer_backward = model_backward
-
-    def call(self, inputs, training=None, mask=None):
-        reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
-        output = self.layer_backward(inputs)
-        if reshape_tag:
-            output = K.reshape(output, [-1]+n_out+list(self.layer.input.shape[1:]))
-
-        return output
 
 
 def get_backward_ZeroPadding1D(layer: ZeroPadding1D, use_bias=True) -> Layer:

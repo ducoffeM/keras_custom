@@ -100,18 +100,15 @@ class BackwardDepthwiseConv3D(BackwardLinearLayer):
         else:
             self.inner_models = conv_transpose_list
 
-    def call(self, inputs, training=None, mask=None):
-
-        reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
-
+    def call_on_reshaped_gradient(self, gradient, input=None, training=None, mask=None):
         # remove bias if needed
         if self.layer.use_bias and self.use_bias:
             if self.layer.data_format == "channels_first":
-                inputs = inputs - self.layer.bias[None, :, None, None, None]  # (batch, d_m*c_in, d_out, w_out, h_out)
+                gradient = gradient - self.layer.bias[None, :, None, None, None]  # (batch, d_m*c_in, d_out, w_out, h_out)
             else:
-                inputs = inputs - self.layer.bias[None, None, None, None, :]  # (batch, d_out, w_out, h_out, d_m*c_in)
+                gradient = gradient - self.layer.bias[None, None, None, None, :]  # (batch, d_out, w_out, h_out, d_m*c_in)
 
-        outputs = self.op_reshape(inputs)  # (batch, d_m, c_in, d_out, w_out, h_out) if data_format=channel_first
+        outputs = self.op_reshape(gradient)  # (batch, d_m, c_in, d_out, w_out, h_out) if data_format=channel_first
 
         # if self.layer.use_bias and self.use_bias:
 
@@ -122,11 +119,8 @@ class BackwardDepthwiseConv3D(BackwardLinearLayer):
             self.inner_models[i](s_o_i) for (i, s_o_i) in enumerate(split_outputs)
         ]  # [(batch_size, 1, d_in, w_in, h_in)]
         output= K.concatenate(conv_outputs, axis=self.axis)  # (batch_size, c_in, d_in, w_in, h_in)
-
-        if reshape_tag:
-            output = K.reshape(output, [-1]+n_out+list(self.layer.input.shape[1:]))
-
         return output
+    
 
 
 def get_backward_DepthwiseConv3D(layer: DepthwiseConv3D, use_bias=True) -> Layer:

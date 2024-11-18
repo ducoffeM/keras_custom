@@ -1,14 +1,17 @@
-from keras.layers import Input
+from keras.layers import Input, Layer
 from keras.models import Sequential, Model
 
 from keras_custom.backward import get_backward
-from keras_custom.backward.layers.layer import BackwardLinearLayer, BackwardNonLinearLayer
+from keras_custom.backward.layers.layer import BackwardLayer, BackwardLinearLayer, BackwardNonLinearLayer
+from keras import KerasTensor as Tensor
+from typing import Union, Optional, Tuple, Any, List
 
 
-def get_backward_sequential(model):
+def get_backward_sequential(model:Model, gradient:Union[None, Tensor, List[Tensor]]=None, use_gradient_as_backward_input:bool=False, mapping_keras2backward_classes: Optional[dict[type[Layer], type[BackwardLayer]]] = None, extra_inputs:Union[List[Input], None]=None):
+    # to do implement gradient
 
     # convert every layers
-    layers_backward = [get_backward(layer, use_bias=False) for layer in model.layers]
+    layers_backward = [get_backward(layer, use_bias=False, mapping_keras2backward_classes=mapping_keras2backward_classes) for layer in model.layers]
     # check if the layers are all linear
     is_linear = min([isinstance(layer_backward, BackwardLinearLayer) for layer_backward in layers_backward])
     if is_linear:

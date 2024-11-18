@@ -29,24 +29,18 @@ class BackwardDense(BackwardLinearLayer):
     ):
         super().__init__(layer=layer, use_bias=use_bias, **kwargs)
 
-    def call(self, inputs, training=None, mask=None):
-        reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
-
+    def call_on_reshaped_gradient(self, gradient, input=None, training=None, mask=None):
         if self.layer.use_bias and self.use_bias:
-            inputs = inputs -self.layer(K.zeros([1]+self.output_dim_wo_batch))
+            gradient = gradient -self.layer(K.zeros([1]+self.output_dim_wo_batch))
 
         if self.layer.use_bias and self.use_bias:
             input_dim_wo_batch = list(self.output_dim_wo_batch)
-            x = K.add(inputs, -self.layer(K.zeros([1]+input_dim_wo_batch)))
-            x = K.matmul(x, K.transpose(self.layer.kernel))
+            output = K.add(gradient, -self.layer(K.zeros([1]+input_dim_wo_batch)))
+            output = K.matmul(output, K.transpose(self.layer.kernel))
         else:
-            x = K.matmul(inputs, K.transpose(self.layer.kernel))
-        
+            output = K.matmul(gradient, K.transpose(self.layer.kernel))
 
-        if reshape_tag:
-            x = K.reshape(x, [-1]+n_out+list(self.input_dim_wo_batch))
-
-        return x
+        return output
     
 
 def get_backward_Dense(layer: Dense, use_bias=True) -> Layer:

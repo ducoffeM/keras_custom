@@ -63,14 +63,7 @@ class BackwardConv1D(BackwardLinearLayer):
 
 
         self.layer_backward = layer_backward
-
-    def call(self, inputs, training=None, mask=None):
-        reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
-        output = self.layer_backward(inputs)
-        if reshape_tag:
-            output = K.reshape(output, [-1]+n_out+self.input_dim_wo_batch)
-
-        return output
+    
 
 
 def get_backward_Conv1D(layer: Conv1D, use_bias=True) -> Layer:

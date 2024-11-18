@@ -34,14 +34,6 @@ class BackwardCropping3D(BackwardLinearLayer):
         self.layer_backward = ZeroPadding3D(padding=cropping, data_format=data_format)
         self.layer_backward.built = True
 
-    def call(self, inputs, training=None, mask=None):
-        reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
-        output = self.layer_backward(inputs)
-        if reshape_tag:
-            output = K.reshape(output, [-1]+n_out+list(self.layer.input.shape[1:]))
-
-        return output
-
 
 def get_backward_Cropping3D(layer: Cropping3D, use_bias=True) -> Layer:
     """

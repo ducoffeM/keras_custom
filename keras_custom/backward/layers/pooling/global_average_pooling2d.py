@@ -22,6 +22,25 @@ class BackwardGlobalAveragePooling2D(BackwardLinearLayer):
     output = backward_layer(input_tensor)
     """
 
+    def call_on_reshaped_gradient(self, gradient, input=None, training=None, mask=None):
+        if self.layer.data_format == "channels_first":
+            w_in, h_in = self.layer.input.shape[-2:]
+            if self.layer.keepdims:
+                output= K.repeat(K.repeat(gradient, w_in, -2), h_in, -1) / (w_in * h_in)
+            else:
+                output= K.repeat(K.repeat(K.expand_dims(K.expand_dims(gradient, -1), -1), w_in, -2), h_in, -1) / (
+                    w_in * h_in
+                )
+        else:
+            w_in, h_in = self.layer.input.shape[1:3]
+            if self.layer.keepdims:
+                output= K.repeat(K.repeat(gradient, w_in, 1), h_in, 2) / (w_in * h_in)
+            else:
+                output= K.repeat(K.repeat(K.expand_dims(K.expand_dims(gradient, 1), 1), w_in, 1), h_in, 2) / (w_in * h_in)
+        return output
+    
+
+    """
     def call(self, inputs, training=None, mask=None):
         
         reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
@@ -45,6 +64,7 @@ class BackwardGlobalAveragePooling2D(BackwardLinearLayer):
             output = K.reshape(output, [-1]+n_out+list(self.layer.input.shape[1:]))
 
         return output
+    """
 
 
 def get_backward_GlobalAveragePooling2D(layer: GlobalAveragePooling2D, use_bias=True) -> Layer:

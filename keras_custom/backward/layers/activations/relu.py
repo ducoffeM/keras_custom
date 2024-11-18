@@ -39,23 +39,15 @@ class BackwardReLU(BackwardNonLinearLayer):
     ):
         super().__init__(layer=layer, use_bias=use_bias, **kwargs)
 
-    def call(self, inputs, training=None, mask=None):
-        layer_output: Tensor = inputs[0]
-        layer_input: Tensor = inputs[1]
-
-        reshape_tag, layer_output, n_out = reshape_to_batch(layer_output, list(self.layer.output.shape))
+    def call_on_reshaped_gradient(self, gradient, input=None, training=None, mask=None):
         backward_relu: Tensor = relu_prime(
-            layer_input,
+            input,
             negative_slope=self.layer.negative_slope,
             threshold=self.layer.threshold,
             max_value=self.layer.max_value,
         )
-        output = layer_output * backward_relu
-
-        if reshape_tag:
-            return K.reshape(output, [-1] + n_out + list(self.layer.input.shape)[1:])
-        else:
-            return output
+        output = gradient * backward_relu
+        return output
 
 
 def get_backward_ReLU(layer: ReLU, use_bias=True) -> Layer:

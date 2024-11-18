@@ -29,7 +29,7 @@ class BackwardFlatten(BackwardLinearLayer):
         **kwargs,
     ):
         super().__init__(layer=layer, **kwargs)
-        input_shape_wo_batch = list(layer.input.shape[1:])
+        input_shape_wo_batch =  self.input_dim_wo_batch
         if layer.data_format == "channels_first" and len(input_shape_wo_batch) > 1:
             # we first permute to obtain channel_last format and then flatten
             target_shape = input_shape_wo_batch[1:] + [input_shape_wo_batch[0]]
@@ -43,14 +43,6 @@ class BackwardFlatten(BackwardLinearLayer):
         else:
 
             self.layer_backward = Reshape(target_shape=input_shape_wo_batch)
-
-    def call(self, inputs, training=None, mask=None):
-        reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
-        output = self.layer_backward(inputs)
-        if reshape_tag:
-            output = K.reshape(output, [-1]+n_out+list(self.layer.input.shape[1:]))
-
-        return output
 
 
 def get_backward_Flatten(layer: Flatten, use_bias=True) -> Layer:

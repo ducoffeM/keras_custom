@@ -77,24 +77,19 @@ class BackwardAveragePooling2D(BackwardLinearLayer):
 
     def compute_output_shape(self, input_shape):
         return self.layer.input.shape
-
-    def call(self, inputs, training=None, mask=None):
-
-        reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
+    
+    def call_on_reshaped_gradient(self, gradient, input=None, training=None, mask=None):
         # inputs (batch, channel_out, w_out, h_out)
         if self.layer.data_format == "channels_first":
-            channel_out = inputs.shape[1]
+            channel_out = gradient.shape[1]
             axis = 1
         else:
-            channel_out = inputs.shape[-1]
+            channel_out = gradient.shape[-1]
             axis = -1
 
-        split_inputs = K.split(inputs, channel_out, axis)
+        split_inputs = K.split(gradient, channel_out, axis)
         # apply conv transpose on every of them
         outputs = K.concatenate([self.model(input_i) for input_i in split_inputs], axis)
-        if reshape_tag:
-            outputs = K.reshape(outputs, [-1]+n_out+list(self.layer.input.shape[1:]))
-
         return outputs
 
 

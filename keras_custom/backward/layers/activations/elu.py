@@ -30,18 +30,10 @@ class BackwardELU(BackwardNonLinearLayer):
     ):
         super().__init__(layer=layer, use_bias=use_bias, **kwargs)
 
-    def call(self, inputs, training=None, mask=None):
-        layer_output: Tensor = inputs[0]
-        layer_input: Tensor = inputs[1]
-
-        reshape_tag, layer_output, n_out = reshape_to_batch(layer_output, list(self.layer.output.shape))
-        backward_output: Tensor = elu_prime(layer_input, alpha=self.layer.alpha)
-        output = layer_output * backward_output
-
-        if reshape_tag:
-            return K.reshape(output, [-1] + n_out + list(self.layer.input.shape)[1:])
-        else:
-            return output
+    def call_on_reshaped_gradient(self, gradient, input=None, training=None, mask=None):
+        backward_output: Tensor = elu_prime(input, alpha=self.layer.alpha)
+        output = gradient * backward_output
+        return output
 
 
 def get_backward_ELU(layer: ELU, use_bias=True) -> Layer:

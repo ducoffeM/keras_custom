@@ -27,16 +27,7 @@ class BackwardReshape(BackwardLinearLayer):
         **kwargs,
     ):
         super().__init__(layer=layer, **kwargs)
-        input_shape_wo_batch = layer.input.shape[1:]
-        self.layer_backward = Reshape(target_shape=input_shape_wo_batch)
-
-    def call(self, inputs, training=None, mask=None):
-        reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
-        output = self.layer_backward(inputs)
-        if reshape_tag:
-            output = K.reshape(output, [-1]+n_out+list(self.layer.input.shape[1:]))
-
-        return output
+        self.layer_backward = Reshape(target_shape=self.input_dim_wo_batch)
 
 
 def get_backward_Reshape(layer: Reshape, use_bias=True) -> Layer:

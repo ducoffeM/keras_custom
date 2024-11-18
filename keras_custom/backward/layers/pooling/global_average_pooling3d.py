@@ -22,22 +22,19 @@ class BackwardGlobalAveragePooling3D(Layer):
     output = backward_layer(input_tensor)
     """
 
-    def call(self, inputs, training=None, mask=None):
-
-        reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
-
+    def call_on_reshaped_gradient(self, gradient, input=None, training=None, mask=None):
         if self.layer.data_format == "channels_first":
             d_in, w_in, h_in = self.layer.input.shape[-3:]
             if self.layer.keepdims:
                 output= K.repeat(
-                    K.repeat(K.repeat(inputs, d_in, -3), w_in, -2),
+                    K.repeat(K.repeat(gradient, d_in, -3), w_in, -2),
                     h_in,
                     -1,
                 ) / (w_in * h_in * d_in)
             else:
                 output= K.repeat(
                     K.repeat(
-                        K.repeat(K.expand_dims(K.expand_dims(K.expand_dims(inputs, -1), -1), -1), d_in, -3), w_in, -2
+                        K.repeat(K.expand_dims(K.expand_dims(K.expand_dims(gradient, -1), -1), -1), d_in, -3), w_in, -2
                     ),
                     h_in,
                     -1,
@@ -46,19 +43,16 @@ class BackwardGlobalAveragePooling3D(Layer):
             d_in, w_in, h_in = self.layer.input.shape[1:4]
             if self.layer.keepdims:
                 output= K.repeat(
-                    K.repeat(K.repeat(inputs, d_in, 1), w_in, 2),
+                    K.repeat(K.repeat(gradient, d_in, 1), w_in, 2),
                     h_in,
                     3,
                 ) / (w_in * h_in * d_in)
             else:
                 output= K.repeat(
-                    K.repeat(K.repeat(K.expand_dims(K.expand_dims(K.expand_dims(inputs, 1), 1), 1), d_in, 1), w_in, 2),
+                    K.repeat(K.repeat(K.expand_dims(K.expand_dims(K.expand_dims(gradient, 1), 1), 1), d_in, 1), w_in, 2),
                     h_in,
                     3,
                 ) / (w_in * h_in * d_in)
-        if reshape_tag:
-            output = K.reshape(output, [-1]+n_out+list(self.layer.input.shape[1:]))
-
         return output
 
 

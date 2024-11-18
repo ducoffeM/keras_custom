@@ -23,25 +23,19 @@ class BackwardGlobalAveragePooling1D(BackwardLinearLayer):
     output = backward_layer(input_tensor)
     """
 
-    def call(self, inputs, training=None, mask=None):
-
-        reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
-
+    def call_on_reshaped_gradient(self, gradient, input=None, training=None, mask=None):
         if self.layer.data_format == "channels_first":
             w_in = self.layer.input.shape[-1]
             if self.layer.keepdims:
-                output= K.repeat(inputs, w_in, -1) / w_in
+                output= K.repeat(gradient, w_in, -1) / w_in
             else:
-                output= K.repeat(K.expand_dims(inputs, -1), w_in, -1) / w_in
+                output= K.repeat(K.expand_dims(gradient, -1), w_in, -1) / w_in
         else:
             w_in = self.layer.input.shape[1]
             if self.layer.keepdims:
-                output= K.repeat(inputs, w_in, 1) / w_in
+                output= K.repeat(gradient, w_in, 1) / w_in
             else:
-                output= K.repeat(K.expand_dims(inputs, 1), w_in, 1) / w_in
-        if reshape_tag:
-            output = K.reshape(output, [-1]+n_out+list(self.layer.input.shape[1:]))
-
+                output= K.repeat(K.expand_dims(gradient, 1), w_in, 1) / w_in
         return output
 
 

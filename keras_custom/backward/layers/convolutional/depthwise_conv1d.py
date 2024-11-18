@@ -102,19 +102,14 @@ class BackwardDepthwiseConv1D(BackwardLinearLayer):
         else:
             self.inner_models = conv_transpose_list
 
-    def call(self, inputs, training=None, mask=None):
-
-        reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
-
+    def call_on_reshaped_gradient(self, gradient, input=None, training = None, mask=None):
         # remove bias if needed
         if self.layer.use_bias and self.use_bias:
             if self.layer.data_format == "channels_first":
-                inputs = inputs - self.layer.bias[None, :, None]  # (batch, d_m*c_in, w_out)
+                gradient = gradient - self.layer.bias[None, :, None]  # (batch, d_m*c_in, w_out)
             else:
-                inputs = inputs - self.layer.bias[None, None, :]  # (batch, w_out, d_m*c_in)
-        outputs = self.op_reshape(inputs)  # (batch, d_m, c_in, w_out) if data_format=channel_first
-
-        # if self.layer.use_bias and self.use_bias:
+                gradient = gradient - self.layer.bias[None, None, :]  # (batch, w_out, d_m*c_in)
+        outputs = self.op_reshape(gradient)  # (batch, d_m, c_in, w_out) if data_format=channel_first
 
         split_outputs = K.split(outputs, self.c_in, axis=self.axis_c)  # [(batch, d_m, 1, w_out, h_out)]
         split_outputs = [self.op_split(s_o_i) for s_o_i in split_outputs]  # [(batch_size, d_m, w_out, h_out)]
@@ -123,11 +118,8 @@ class BackwardDepthwiseConv1D(BackwardLinearLayer):
             self.inner_models[i](s_o_i) for (i, s_o_i) in enumerate(split_outputs)
         ]  # [(batch_size, 1, w_in, h_in)]
         output= K.concatenate(conv_outputs, axis=self.axis)  # (batch_size, c_in, w_in, h_in)
-
-        if reshape_tag:
-            output = K.reshape(output, [-1]+n_out+list(self.layer.input.shape[1:]))
-
         return output
+    
 
 
 def get_backward_DepthwiseConv1D(layer: DepthwiseConv1D, use_bias=True) -> Layer:

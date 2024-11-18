@@ -28,13 +28,6 @@ class BackwardMulConstant(BackwardLinearLayer):
         self.layer_backward = MulConstant(constant=1.0 / layer.constant)
         self.layer_backward.built = True
 
-    def call(self, inputs, training=None, mask=None):
-        reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
-        output= self.layer_backward(inputs)
-        if reshape_tag:
-            output = K.reshape(output, [-1]+n_out+list(self.layer.input.shape[1:]))
-
-        return output
 
 
 def get_backward_MulConstant(layer: MulConstant, use_bias=True) -> Layer:
@@ -91,14 +84,6 @@ class BackwardPlusConstant(BackwardLinearLayer):
             self.layer_backward = PlusConstant(constant=0.0, minus=(layer.sign == -1))
 
         self.layer_backward.built = True
-
-    def call(self, inputs, training=None, mask=None):
-        reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
-        output= self.layer_backward(inputs)
-        if reshape_tag:
-            output = K.reshape(output, [-1]+n_out+list(self.layer.input.shape[1:]))
-
-        return output
 
 
 def get_backward_PlusConstant(layer: PlusConstant, use_bias=True) -> Layer:

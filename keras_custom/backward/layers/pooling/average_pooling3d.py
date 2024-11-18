@@ -77,11 +77,21 @@ class BackwardAveragePooling3D(BackwardLinearLayer):
         self.model.trainable = False
         self.model.built = True
 
-    def compute_output_shape(self, input_shape):
-        return self.layer.input.shape
+    def call_on_reshaped_gradient(self, gradient, input=None, training=None, mask=None):
+        # inputs (batch, channel_out, w_out, h_out)
+        if self.layer.data_format == "channels_first":
+            channel_out = gradient.shape[1]
+            axis = 1
+        else:
+            channel_out = gradient.shape[-1]
+            axis = -1
 
-    # serialize ...
+        split_inputs = K.split(gradient, channel_out, axis)
+        # apply conv transpose on every of them
+        outputs = K.concatenate([self.model(input_i) for input_i in split_inputs], axis)
+        return outputs
 
+    """
     def call(self, inputs, training=None, mask=None):
 
         reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
@@ -100,6 +110,7 @@ class BackwardAveragePooling3D(BackwardLinearLayer):
             outputs = K.reshape(outputs, [-1]+n_out+list(self.layer.input.shape[1:]))
 
         return outputs
+    """
 
 
 def get_backward_AveragePooling3D(layer: AveragePooling3D, use_bias=True) -> Layer:

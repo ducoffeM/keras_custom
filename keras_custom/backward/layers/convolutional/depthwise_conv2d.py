@@ -103,12 +103,9 @@ class BackwardDepthwiseConv2D(BackwardLinearLayer):
         else:
             self.inner_models = conv_transpose_list
 
-    def call(self, inputs, training=None, mask=None):
-
-        reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
-
+    def call_on_reshaped_gradient(self, gradient, input=None, training=None, mask=None):
         output= call_backward_depthwise2d(
-            inputs,
+            gradient,
             self.layer,
             self.op_reshape,
             self.op_split,
@@ -118,10 +115,8 @@ class BackwardDepthwiseConv2D(BackwardLinearLayer):
             self.c_in,
             self.use_bias,
         )
-        if reshape_tag:
-            output = K.reshape(output, [-1]+n_out+list(self.layer.input.shape[1:]))
-
         return output
+    
 
 
 def get_backward_DepthwiseConv2D(layer: DepthwiseConv2D, use_bias=True) -> Layer:

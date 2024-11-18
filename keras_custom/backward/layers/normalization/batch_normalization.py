@@ -22,6 +22,65 @@ class BackwardBatchNormalization(BackwardLinearLayer):
     output = backward_layer(input_tensor)
     """
 
+    def call_on_reshaped_gradient(self, gradient, input=None, training=None, mask=None):
+        if mask is not None:
+            if len(mask.shape) != len(gradient.shape) - 1:
+                # Raise a value error
+                raise ValueError(
+                    "The mask provided should be one dimension less "
+                    "than the inputs. Received: "
+                    f"mask.shape={gradient.shape}, inputs.shape={gradient.shape}"
+                )
+
+        compute_dtype = backend.result_type(inputs.dtype, "float32")
+        # BN is prone to overflow with float16/bfloat16 inputs, so we upcast to
+        # float32 for the subsequent computations.
+        gradient = ops.cast(gradient, compute_dtype)
+
+        moving_mean = ops.cast(self.layer.moving_mean, gradient.dtype)
+        moving_variance = ops.cast(self.layer.moving_variance, gradient.dtype)
+
+        if training and self.layer.trainable:
+            mean, variance = self.layer._moments(gradient, mask)
+        else:
+            mean = moving_mean
+            variance = moving_variance
+
+        if self.layer.scale:
+            gamma = ops.cast(self.layer.gamma, gradient.dtype)
+        else:
+            gamma = None
+
+        if self.layer.center:
+            beta = ops.cast(self.layer.beta, gradient.dtype)
+        else:
+            beta = None
+
+        # reshape mean, variance, beta, gamme to the right shape
+        input_dim_batch = [-1] + [1] * (len(gradient.shape) - 1)
+        input_dim_batch[self.layer.axis] = gradient.shape[self.layer.axis]
+
+        mean_ = ops.reshape(mean, input_dim_batch)
+        variance_ = ops.reshape(variance, input_dim_batch)
+        gamma_ = ops.reshape(gamma, input_dim_batch)
+        beta_ = ops.reshape(beta, input_dim_batch)
+
+        # z = (x-mean_)/ops.sqrt(variance_+epsilon)
+        # inputs = gamma_*z + beta_
+        # thus z = (inputs-beta_)/gamma_
+        # thus x = z*ops.sqrt(variance_+epsilon) + mean_
+        # z = (inputs -beta_)/gamma_
+        # x = z*ops.sqrt(variance_+self.layer.epsilon) + mean_
+        w = ops.sqrt(variance_ + self.layer.epsilon) / gamma_
+        outputs = w * gradient
+
+        if self.use_bias:
+            b = -beta_ * ops.sqrt(variance_ + self.layer.epsilon) / gamma_ + mean_
+            return outputs + b
+        
+        return outputs
+        
+    """
     def call(self, inputs, training=None, mask=None):
         # Check if the mask has one less dimension than the inputs.
         reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
@@ -85,6 +144,7 @@ class BackwardBatchNormalization(BackwardLinearLayer):
             outputs = keras.ops.reshape(outputs, [-1]+n_out+list(self.layer.input.shape[1:]))
 
         return outputs
+    """
 
 
 def get_backward_BatchNormalization(layer: BatchNormalization, use_bias=True) -> Layer:

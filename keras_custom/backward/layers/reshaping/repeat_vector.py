@@ -28,14 +28,8 @@ class BackwardRepeatVector(BackwardLinearLayer):
 
         self.layer = layer
 
-    def call(self, inputs, training=None, mask=None):
-
-        reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
-        output = K.max(inputs, axis=1)
-        if reshape_tag:
-            output = K.reshape(output, [-1]+n_out+list(self.layer.input.shape[1:]))
-
-        return output
+    def call_on_reshaped_gradient(self, gradient, input=None, training=None, mask=None):
+        return K.max(gradient, axis=1)
 
 
 def get_backward_RepeatVector(layer: BackwardRepeatVector, use_bias=True) -> Layer:

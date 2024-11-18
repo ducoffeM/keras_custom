@@ -31,20 +31,16 @@ class BackwardEinsumDense(BackwardLinearLayer):
     ):
         super().__init__(layer=layer, use_bias=use_bias, **kwargs)
 
-    def call(self, inputs, training=None, mask=None):
-        reshape_tag, inputs, n_out = reshape_to_batch(inputs, list(self.layer.output.shape))
-
+    def call_on_reshaped_gradient(self, gradient, input=None, training=None, mask=None):
         if self.use_bias:
             input_dim_wo_batch = list(self.layer.input.shape[1:])
-            x = K.add(inputs, -self.layer(K.zeros([1] + input_dim_wo_batch)))
-            x = ops.einsum(self.layer.equation, x, K.transpose(self.layer.kernel))
+            gradient = K.add(gradient, -self.layer(K.zeros([1] + input_dim_wo_batch)))
+            output = ops.einsum(self.layer.equation, gradient, K.transpose(self.layer.kernel))
         else:
-            x = ops.einsum(self.layer.equation, inputs, K.transpose(self.layer.kernel))
+            output = ops.einsum(self.layer.equation, gradient, K.transpose(self.layer.kernel))
 
-        if reshape_tag:
-            x = K.reshape(x, [-1] + n_out + list(self.layer.input.shape[1:]))
+        return output
 
-        return x
 
 
 def get_backward_EinsumDense(layer: EinsumDense, use_bias=True) -> Layer:

@@ -57,28 +57,17 @@ class BackwardMaxPooling2D(BackwardNonLinearLayer):
 
         self.backward_reshape_op = BackwardReshape(layer=self.reshape_op)
         self.backward_conv2d = BackwardDepthwiseConv2D(layer=self.conv_op, use_bias=False)
-        
-    def call(self, inputs, training=None, mask=None):
-        layer_output: Tensor = inputs[0]
-        layer_input: Tensor = inputs[1]
 
-        # propagate inputs through conv_op, reshape_op
-        reshape_tag, layer_output, n_out = reshape_to_batch(layer_output, list(self.layer.output.shape))
-        
-        inner_input = self.reshape_op(self.conv_op(layer_input))
-
+    def call_on_reshaped_gradient(self, gradient, input=None, training=None, mask=None):
+        inner_input = self.reshape_op(self.conv_op(input))
 
         backward_max = max_prime(inner_input, axis=self.axis)
-        backward_max_fuse = backward_max*K.expand_dims(layer_output, axis=self.axis)
+        backward_max_fuse = backward_max*K.expand_dims(gradient, axis=self.axis)
         if self.layer.data_format=="channels_last":
             backward_max_fuse = K.transpose(backward_max_fuse, (0, 1, 2, 4, 3))
         backward_reshape = self.backward_reshape_op(backward_max_fuse)
         output = self.backward_conv2d(backward_reshape)
-
-        if reshape_tag:
-            return K.reshape(output, [-1] + n_out + list(self.layer.input.shape)[1:])
-        else:
-            return output
+        return output
         
 def get_backward_MaxPooling2D(layer: MaxPooling2D, use_bias=True) -> Layer:
     """
