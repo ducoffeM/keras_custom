@@ -1,5 +1,5 @@
-import keras
-from keras_custom.layers.core import BaseAxisKeepdimsLayer
+import keras #type:ignore
+from keras_custom.layers.reduce.base_reduce import BaseAxisKeepdimsLayer
 
 
 class Sum(BaseAxisKeepdimsLayer):

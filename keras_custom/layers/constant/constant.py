@@ -1,13 +1,9 @@
 # custom layers used during onnx export: onnx2keras3
-import keras
-import numpy as np
+import keras #type:ignore
 
-# typing
+from keras_custom.layers.typing import ArrayLike # type: ignore
+from keras import KerasTensor as Tensor
 from typing import Union
-import numpy
-
-ArrayLike = numpy.typing.ArrayLike
-Tensor = keras.KerasTensor
 
 
 class PlusConstant(keras.layers.Layer):
@@ -105,7 +101,7 @@ class DivConstant(keras.layers.Layer):
     This layer performs element-wise division of a constant value and a Keras Tensor.
     """
 
-    def __init__(self, constant: Union[float, ArrayLike], **kwargs):
+    def __init__(self, constant: Union[float, ArrayLike], **kwargs):  #type:ignore
         """
         Compute the result of  x*constant.
         Args:

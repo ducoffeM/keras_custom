@@ -1,7 +1,7 @@
 # define non native class Max
 # Decomon Custom for Max(axis...)
 import keras
-from keras.layers import Layer
+from keras.layers import Layer #type:ignore
 from typing import List
 
 

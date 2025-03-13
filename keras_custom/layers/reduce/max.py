@@ -1,7 +1,7 @@
 # define non native class Max
 # Decomon Custom for Max(axis...)
-import keras
-from keras_custom.layers.core import BaseAxisKeepdimsLayer
+import keras #type:ignore
+from keras_custom.layers.reduce.base_reduce import BaseAxisKeepdimsLayer
 
 
 class Max(BaseAxisKeepdimsLayer):

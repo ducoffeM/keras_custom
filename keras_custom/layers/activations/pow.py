@@ -1,4 +1,4 @@
-import keras
+import keras #type:ignore
 
 
 class Pow(keras.layers.Layer):
