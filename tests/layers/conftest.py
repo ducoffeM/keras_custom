@@ -2,8 +2,8 @@ import os
 import numpy as np
 import keras
 from keras_custom.layers import *
-from keras.layers import Dense, Reshape, ReLU
-from keras.models import Sequential
+from keras.layers import Dense, Reshape #type:ignore
+from keras.models import Sequential #type:ignore
 import torch
 
 # test custom layers
