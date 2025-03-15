@@ -24,8 +24,7 @@ repository = "https://github.com/ducoffeM/keras_custom"
 dev = ["tox>=4.6.4"]
 
 [tool.setuptools.packages.find]
-where = ["."]
-include = ["keras_custom*"]
+where = ["keras_custom"]
 
 [tool.setuptools_scm]
 
@@ -36,7 +35,7 @@ addopts = [
 ]
 
 [tool.black]
-line-length = 120
+line-length = 100
 target-version = ['py39']
 include = '\.pyi?$'
 exclude = '''
@@ -53,11 +52,24 @@ exclude = '''
     | buck-out
     | build
     | dist
-    | tests/.*/setup.py
   )/
   | foo.py           # also separately exclude a file named foo.py in
                      # the root of the project
 )
 '''
 
+[tool.mypy]
+files = "keras_custom"
+strict_optional = true
+implicit_optional = false
+check_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = [
+    "tensorflow.*",
+    "keras.*",
+    "torch.*"
+]
 ignore_missing_imports = true
