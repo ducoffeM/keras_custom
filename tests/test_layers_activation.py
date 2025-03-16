@@ -1,5 +1,6 @@
 from .conftest import func_layer
 from keras_custom.layers import Identity, Log, Floor, Clip
+import optparse
 
 
 def test_Identity():

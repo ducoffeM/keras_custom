@@ -4,6 +4,9 @@ from keras_custom.layers import Sum
 
 def test_Sum():
 
+    import os
+    print("PYTORCH_ENABLE_MPS_FALLBACK:", os.getenv("PYTORCH_ENABLE_MPS_FALLBACK"))     
+
     layer = Sum(axis=-1, keepdims=True)
 
     input_shape = (2,)

@@ -5,18 +5,19 @@
                 <source media="(prefers-color-scheme: light)" srcset="./docs/assets/logo_night.png">
                 <img alt="Library Banner" src="./docs/assets/logo.png">
         </picture>
+        Keras Custom
 </div>
 <br>
 
 <div align="center">
-    <a href="https://github.com/deel-ai/deel-lip/actions/workflows/python-tests.yml">
-        <img alt="Tox" src="https://github.com/deel-ai/deel-lip/actions/workflows/python-linters.yml/badge.svg?branch=master">
+    <a href="https://github.com/ducoffeM/keras_custom/actions/workflows/python-tests.yml">
+        <img alt="Tox" src="https://github.com/ducoffeM/keras_custom/actions/workflows/python-linters.yml/badge.svg?branch=master">
     </a>
-    <a href="https://pypi.org/project/deel-lip">
-        <img alt="Pypi" src="https://img.shields.io/pypi/v/deel-lip.svg">
+    <a href="https://pypi.org/project/keras_custom">
+        <img alt="Pypi" src="https://img.shields.io/pypi/v/keras_custom.svg">
     </a>
-    <a href="https://pepy.tech/project/deel-lip">
-        <img alt="Pepy" src="https://pepy.tech/badge/deel-lip">
+    <a href="https://pepy.tech/project/keras_custom">
+        <img alt="Pepy" src="https://pepy.tech/badge/keras_custom">
     </a>
     <a href="#">
         <img src="https://img.shields.io/badge/License-MIT-efefef">
@@ -27,9 +28,12 @@
 <br>
 
 ## 👋 Welcome to keras custom documentation!
-***Keras Custom*** is a Python library built qui contient des classes non natives à Keras et des modules de manipulation des modèles Keras. It provides a clear and modular framework on top of Keras, making it a valuable tool for researchers and educators in deep learning.
-It enables researchers and developers to efficiently analyze, manipulate, and utilize Keras neural models in downstream tasks.
 
+**Keras Custom** is a Python library that extends Keras with custom, non-native classes and modules designed to enhance model manipulation. This library introduces powerful new features, including advanced model analysis tools and utilities, that are not available in Keras by default. It provides a clear, modular framework built on top of Keras, making it an invaluable tool for researchers, educators, and developers working in deep learning.
+
+The new non-native classes in **Keras Custom** enable users to efficiently analyze, modify, and optimize Keras-based neural models for a variety of downstream tasks. These custom components open up new possibilities for customizing and extending Keras models beyond the built-in functionality.
+
+Whether you're exploring new architectures, conducting research, or building complex deep learning workflows, **Keras Custom** offers the flexibility and power to streamline your work.
 
 ## 📚 Table of contents
 
@@ -75,7 +79,7 @@ We use [black](https://pypi.org/project/black/) to format the code and follow PE
 To check that your code will pass the lint-checks, you can run:
 
 ```python
-tox -e py36-lint
+tox -e py39-lint
 ```
 
 You need [`tox`](https://tox.readthedocs.io/en/latest/) in order to
@@ -99,9 +103,6 @@ pip install tox
   </picture>
 </div>
 This project received funding from the French program within the <a href="https://aniti.univ-toulouse.fr/">Artificial and Natural Intelligence Toulouse Institute (ANITI)</a>. The authors gratefully acknowledge the support of the <a href="https://www.deel.ai/"> DEEL </a> project.
-
-
-## 🗞️ Citation
 
 
 
