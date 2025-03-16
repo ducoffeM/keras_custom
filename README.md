@@ -3,7 +3,7 @@
         <picture>
                 <source media="(prefers-color-scheme: dark)" srcset="./docs/assets/logo.png">
                 <source media="(prefers-color-scheme: light)" srcset="./docs/assets/logo_night.png">
-                <img alt="Library Banner" src="./docs/assets/logo.png" width="500" height="500">
+                <img alt="Library Banner" src="./docs/assets/logo.png" width="300" height="300">
         </picture>
 </div>
 <br>
