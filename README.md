@@ -9,14 +9,11 @@
 <br>
 
 <div align="center">
+  <a href="#">
+        <img src="https://img.shields.io/badge/Python-%E2%89%A53.9-efefef">
+    </a>
     <a href="https://github.com/ducoffeM/keras_custom/actions/workflows/python-tests.yml">
-        <img alt="Tox" src="https://github.com/ducoffeM/keras_custom/actions/workflows/python-linters.yml/badge.svg?branch=master">
-    </a>
-    <a href="https://pypi.org/project/keras_custom">
-        <img alt="Pypi" src="https://img.shields.io/pypi/v/keras_custom.svg">
-    </a>
-    <a href="https://pepy.tech/project/keras_custom">
-        <img alt="Pepy" src="https://pepy.tech/badge/keras_custom">
+        <img alt="Tox" src="https://github.com/ducoffeM/keras_custom/actions/workflows/python-tests.yml/badge.svg">
     </a>
     <a href="#">
         <img src="https://img.shields.io/badge/License-MIT-efefef">
