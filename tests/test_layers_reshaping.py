@@ -1,8 +1,8 @@
 from .conftest import func_layer
 import keras
 from keras_custom.layers import Slice, Split
-import torch
-from keras.models import Sequential
+#import torch
+from keras.models import Sequential #type:ignore
 import numpy as np
 import os
 
@@ -18,7 +18,7 @@ def test_Split():
 
     layer = Split(splits=[2, 5], axis=-1)
     toy_model = Sequential([layer])
-    input_ = torch.ones((1, 4, 32))
+    input_ = np.ones((1, 4, 32))
     elems = toy_model.predict(input_)
     # serialize
     filename = "test_serialize_{}_{}.keras".format(layer.__class__.__name__, layer.name)

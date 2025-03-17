@@ -4,7 +4,6 @@ import keras
 from keras_custom.layers import *
 from keras.layers import Dense, Reshape #type:ignore
 from keras.models import Sequential #type:ignore
-import torch
 
 # test custom layers
 # to test: initialization, inference, serialization and deserialization
@@ -21,8 +20,8 @@ def func_layer(layer, input_shape):
         layer = [layer]
     toy_model = Sequential(layers=[dense_0, reshape_0] + layer + [reshape_1, dense_1])
 
-    toy_dataset = torch.ones((10, 2))
-    toy_label = torch.ones((10, 1))
+    toy_dataset = np.ones((10, 2))
+    toy_label = np.ones((10, 1))
     _ = toy_model(toy_dataset)
 
     toy_model.compile("sgd", "mse")
