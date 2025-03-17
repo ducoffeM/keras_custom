@@ -15,6 +15,9 @@
     <a href="https://github.com/ducoffeM/keras_custom/actions/workflows/python-tests.yml">
         <img alt="Tox" src="https://github.com/ducoffeM/keras_custom/actions/workflows/python-tests.yml/badge.svg">
     </a>
+    <a href="https://github.com/ducoffeM/keras_custom/actions/workflows/python-linters.yml">
+        <img alt="Lint" src="https://github.com/ducoffeM/keras_custom/actions/workflows/python-linters.yml/badge.svg">
+    </a>
     <a href="#">
         <img src="https://img.shields.io/badge/License-MIT-efefef">
     </a>
