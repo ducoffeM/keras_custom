@@ -57,8 +57,8 @@ supports Keras versions 3.x.
 
 | **Tutorial Name**           | Notebook                                                                                                                                                           |
 | :-------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-| Model splitting - Splitting an existing models into a sequence of nested models | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ducoffeM/jacobinet/blob/main/tutorials/PlottingBackward.ipynb)            |
-| Model fusion - Combining a sequence of models into a single model with only Layers | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ducoffeM/jacobinet/blob/main/tutorials/CustomOp.ipynb)
+| Model splitting - Splitting an existing models into a sequence of nested models | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ducoffeM/keras_custom/blob/main/tutorials/ModelSplitting.ipynb)            |
+%| Model fusion - Combining a sequence of models into a single model with only Layers | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]%(https://colab.research.google.com/github/ducoffeM/jacobinet/blob/main/tutorials/CustomOp.ipynb)
 
 
 Documentation is available [**online**](https://ducoffeM.github.io/keras_custom/index.html).
