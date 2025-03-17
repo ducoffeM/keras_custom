@@ -2,7 +2,7 @@ import keras #type:ignore
 from keras_custom.layers.reduce.base_reduce import BaseAxisKeepdimsLayer
 
 
-
+@keras.saving.register_keras_serializable()
 class Mean(BaseAxisKeepdimsLayer):
     """
     Custom Keras Layer that computes the mean of elements along a specified axis.

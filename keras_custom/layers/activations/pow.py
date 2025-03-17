@@ -1,6 +1,6 @@
 import keras #type:ignore
 
-
+@keras.saving.register_keras_serializable()
 class Pow(keras.layers.Layer):
     """
     Custom Keras Layer that raises each element of the input tensor to a specified power.

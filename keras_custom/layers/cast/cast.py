@@ -1,7 +1,7 @@
 import keras
 import keras.ops as K
 
-
+@keras.saving.register_keras_serializable()
 class Cast(keras.layers.Layer):
     """
     Custom Keras Layer that casts the input tensor to a specified data type.

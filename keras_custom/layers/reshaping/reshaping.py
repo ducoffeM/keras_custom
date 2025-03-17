@@ -1,7 +1,7 @@
 import keras
 import numpy as np
 
-
+@keras.saving.register_keras_serializable()
 class Slice(keras.layers.Layer):
     """
     Custom Keras Layer that slices the input tensor along a specified axis, using start, end, and step values.
@@ -56,7 +56,7 @@ class Slice(keras.layers.Layer):
         steps = keras.saving.deserialize_keras_object(steps_config)
         return cls(axis=axis, starts=starts, ends=ends, steps=steps, **config)
 
-
+@keras.saving.register_keras_serializable()
 class Split(keras.layers.Layer):
     """
     Custom Keras Layer that splits the input tensor into multiple sub-tensors along a specified axis.

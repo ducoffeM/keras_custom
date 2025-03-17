@@ -3,7 +3,7 @@
 import keras #type:ignore
 from keras_custom.layers.reduce.base_reduce import BaseAxisKeepdimsLayer
 
-
+@keras.saving.register_keras_serializable()
 class Max(BaseAxisKeepdimsLayer):
     """
     Custom Keras Layer that computes the maximum value along a specified axis of the input tensor.
@@ -14,7 +14,7 @@ class Max(BaseAxisKeepdimsLayer):
         """Computes the maximum value along the specified axis, retaining dimensions if keepdims is True."""
         return keras.ops.max(inputs_, axis=self.axis, keepdims=self.keepdims)
 
-
+@keras.saving.register_keras_serializable()
 class Argmax(BaseAxisKeepdimsLayer):
     """
     Custom Keras Layer that computes the index of the maximum value along a specified axis.

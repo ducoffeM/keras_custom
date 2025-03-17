@@ -1,6 +1,6 @@
 import keras #type:ignore
 
-
+@keras.saving.register_keras_serializable()
 class Identity(keras.layers.Layer):
     """
     Custom Keras Layer that outputs the input tensor unchanged, acting as an identity operation.
@@ -16,7 +16,7 @@ class Identity(keras.layers.Layer):
 
         return input_shape
 
-
+@keras.saving.register_keras_serializable()
 class Log(keras.layers.Layer):
     """
     Custom Keras Layer that applies the natural logarithm (log) operation to each element in the input tensor.
@@ -44,7 +44,7 @@ class Log(keras.layers.Layer):
 
         return input_shape
 
-
+@keras.saving.register_keras_serializable()
 class Floor(keras.layers.Layer):
     """
     Custom Keras Layer that applies the floor operation to each element in the input tensor.
@@ -71,7 +71,7 @@ class Floor(keras.layers.Layer):
 
         return input_shape
 
-
+@keras.saving.register_keras_serializable()
 class Clip(keras.layers.Layer):
     """
     Custom Keras Layer that clips the values of a Keras Tensor element-wise, within a specified range.

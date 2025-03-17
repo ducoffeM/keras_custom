@@ -5,7 +5,7 @@ from keras_custom.layers.typing import ArrayLike # type: ignore
 from keras import KerasTensor as Tensor
 from typing import Union
 
-
+@keras.saving.register_keras_serializable()
 class PlusConstant(keras.layers.Layer):
     """Custom Keras Layer that adds a constant value to a Keras Tensor.
     This layer performs element-wise addition of a constant value to a Keras Tensor.
@@ -55,7 +55,7 @@ class PlusConstant(keras.layers.Layer):
             minus = True
         return cls(constant=constant, minus=minus, **config)
 
-
+@keras.saving.register_keras_serializable()
 class MulConstant(keras.layers.Layer):
     """Custom Keras Layer that multiply a constant value to a Keras Tensor.
     This layer performs element-wise multiplication of a constant value to a Keras Tensor.
@@ -95,7 +95,7 @@ class MulConstant(keras.layers.Layer):
         sublayer = keras.saving.deserialize_keras_object(sublayer_config)
         return cls(sublayer, **config)
 
-
+@keras.saving.register_keras_serializable()
 class DivConstant(keras.layers.Layer):
     """Custom Keras Layer that divide a constant value with a Keras Tensor.
     This layer performs element-wise division of a constant value and a Keras Tensor.

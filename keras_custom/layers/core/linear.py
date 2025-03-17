@@ -4,7 +4,7 @@ import keras
 from keras.layers import Layer #type:ignore
 from typing import List
 
-
+@keras.saving.register_keras_serializable()
 class Linear(keras.layers.Layer):
     """
     Custom Keras Layer that sequentially applies a list of linear layers to the input.
