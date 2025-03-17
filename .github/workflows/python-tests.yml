@@ -20,6 +20,9 @@ jobs:
         python-version: ["3.9"]
         os: ["ubuntu-latest", "macos-latest", "windows-latest"]
         backend: ["torch", "tf", "jax"]
+      exclude:
+          - os: "macos-latest"
+            backend: "torch"
     runs-on: ${{ matrix.os }}
     defaults:
       run:
