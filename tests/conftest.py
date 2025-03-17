@@ -1,16 +1,16 @@
 import os
-import numpy as np
+
 import keras
+import numpy as np
+from keras.layers import Dense, Reshape  # type:ignore
+from keras.models import Sequential  # type:ignore
 from keras_custom.layers import *
-from keras.layers import Dense, Reshape #type:ignore
-from keras.models import Sequential #type:ignore
 
 # test custom layers
 # to test: initialization, inference, serialization and deserialization
 
 
 def func_layer(layer, input_shape):
-
     # create a toy model: Dense(np.prod(input_shape)), Reshape(input_shape), layer, Reshape(-1), Dense(1)
     dense_0 = Dense(np.prod(input_shape))
     reshape_0 = Reshape(input_shape)
@@ -44,5 +44,7 @@ def func_layer(layer, input_shape):
     # compare with the previous output
     output_after_export = load_model.predict(toy_value_np)
 
-    np.testing.assert_almost_equal(output_after_training, output_after_export, err_msg="corrupted weights")
+    np.testing.assert_almost_equal(
+        output_after_training, output_after_export, err_msg="corrupted weights"
+    )
     os.remove(filename)

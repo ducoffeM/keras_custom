@@ -1,9 +1,9 @@
-from .conftest import func_layer
 from keras_custom.layers import Pow
+
+from .conftest import func_layer
 
 
 def test_Pow():
-
     layer = Pow(power=1)
 
     input_shape = (2,)

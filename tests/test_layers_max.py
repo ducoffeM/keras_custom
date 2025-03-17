@@ -1,9 +1,9 @@
-from .conftest import func_layer
 from keras_custom.layers import Max
+
+from .conftest import func_layer
 
 
 def test_Max():
-
     layer = Max(axis=-1, keepdims=True)
 
     input_shape = (2,)

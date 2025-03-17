@@ -1,10 +1,11 @@
-from .conftest import func_layer
-from keras_custom.layers import Identity, Log, Floor, Clip
 import optparse
+
+from keras_custom.layers import Clip, Floor, Identity, Log
+
+from .conftest import func_layer
 
 
 def test_Identity():
-
     layer = Identity()
 
     input_shape = (2,)
@@ -20,7 +21,6 @@ def test_Identity():
 
 
 def test_Floor():
-
     layer = Floor()
 
     input_shape = (2,)
@@ -36,7 +36,6 @@ def test_Floor():
 
 
 def test_Clip():
-
     layer = Clip(vmin=0, vmax=1)
 
     input_shape = (2,)

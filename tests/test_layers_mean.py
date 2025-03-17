@@ -1,9 +1,9 @@
-from .conftest import func_layer
 from keras_custom.layers import Mean
+
+from .conftest import func_layer
 
 
 def test_Mean():
-
     layer = Mean(axis=-1, keepdims=True)
 
     input_shape = (2,)

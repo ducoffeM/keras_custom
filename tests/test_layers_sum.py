@@ -1,11 +1,12 @@
-from .conftest import func_layer
 from keras_custom.layers import Sum
+
+from .conftest import func_layer
 
 
 def test_Sum():
-
     import os
-    print("PYTORCH_ENABLE_MPS_FALLBACK:", os.getenv("PYTORCH_ENABLE_MPS_FALLBACK"))     
+
+    print("PYTORCH_ENABLE_MPS_FALLBACK:", os.getenv("PYTORCH_ENABLE_MPS_FALLBACK"))
 
     layer = Sum(axis=-1, keepdims=True)
 

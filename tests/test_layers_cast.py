@@ -1,9 +1,9 @@
-from .conftest import func_layer
 from keras_custom.layers import Cast
+
+from .conftest import func_layer
 
 
 def test_Cast():
-
     layer = Cast(1)
 
     input_shape = (2,)
