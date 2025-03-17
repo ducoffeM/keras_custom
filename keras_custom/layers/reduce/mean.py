@@ -1,4 +1,4 @@
-import keras #type:ignore
+import keras  # type:ignore
 from keras_custom.layers.reduce.base_reduce import BaseAxisKeepdimsLayer
 
 

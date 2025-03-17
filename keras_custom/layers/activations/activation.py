@@ -1,4 +1,5 @@
-import keras #type:ignore
+import keras  # type:ignore
+
 
 @keras.saving.register_keras_serializable()
 class Identity(keras.layers.Layer):
@@ -13,8 +14,8 @@ class Identity(keras.layers.Layer):
         return inputs_
 
     def compute_output_shape(self, input_shape):
-
         return input_shape
+
 
 @keras.saving.register_keras_serializable()
 class Log(keras.layers.Layer):
@@ -37,12 +38,11 @@ class Log(keras.layers.Layer):
     """
 
     def call(self, inputs_):
-
         return keras.ops.log(inputs_)
 
     def compute_output_shape(self, input_shape):
-
         return input_shape
+
 
 @keras.saving.register_keras_serializable()
 class Floor(keras.layers.Layer):
@@ -68,8 +68,8 @@ class Floor(keras.layers.Layer):
         return keras.ops.floor(inputs_)
 
     def compute_output_shape(self, input_shape):
-
         return input_shape
+
 
 @keras.saving.register_keras_serializable()
 class Clip(keras.layers.Layer):
@@ -108,7 +108,6 @@ class Clip(keras.layers.Layer):
         self.vmax: float = vmax
 
     def call(self, inputs_):
-
         return keras.ops.clip(inputs_, self.vmin, self.vmax)
 
     def get_config(self):
@@ -117,7 +116,6 @@ class Clip(keras.layers.Layer):
         return config
 
     def compute_output_shape(self, input_shape):
-
         return input_shape
 
     @classmethod

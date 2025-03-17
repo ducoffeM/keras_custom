@@ -1,5 +1,7 @@
-import keras
 from abc import ABC, abstractmethod
+
+import keras
+
 
 @keras.saving.register_keras_serializable()
 class BaseAxisKeepdimsLayer(keras.layers.Layer, ABC):
@@ -36,7 +38,6 @@ class BaseAxisKeepdimsLayer(keras.layers.Layer, ABC):
         return config
 
     def compute_output_shape(self, input_shape):
-
         input_shape = list(input_shape)
         if self.axis < 0:
             axis_ = len(input_shape) + self.axis

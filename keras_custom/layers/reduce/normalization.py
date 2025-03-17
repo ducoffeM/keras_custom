@@ -1,6 +1,7 @@
 import keras
 from keras_custom.layers.reduce.base_reduce import BaseAxisKeepdimsLayer
 
+
 @keras.saving.register_keras_serializable()
 class ReduceL2(BaseAxisKeepdimsLayer):
     """

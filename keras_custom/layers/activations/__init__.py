@@ -1,2 +1,2 @@
-from .activation import Identity, Log, Floor, Clip
+from .activation import Clip, Floor, Identity, Log
 from .pow import Pow

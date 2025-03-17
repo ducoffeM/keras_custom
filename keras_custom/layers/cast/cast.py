@@ -1,6 +1,7 @@
 import keras
 import keras.ops as K
 
+
 @keras.saving.register_keras_serializable()
 class Cast(keras.layers.Layer):
     """
@@ -34,7 +35,6 @@ class Cast(keras.layers.Layer):
         return config
 
     def compute_output_shape(self, input_shape):
-
         return input_shape
 
     @classmethod

@@ -1,4 +1,5 @@
-import keras #type:ignore
+import keras  # type:ignore
+
 
 @keras.saving.register_keras_serializable()
 class Pow(keras.layers.Layer):

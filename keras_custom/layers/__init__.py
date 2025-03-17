@@ -1,6 +1,6 @@
-from .activations import Identity, Log, Floor, Clip, Pow
+from .activations import Clip, Floor, Identity, Log, Pow
 from .cast import Cast
-from .constant import PlusConstant, MulConstant, DivConstant, ConstantPadding2D
+from .constant import ConstantPadding2D, DivConstant, MulConstant, PlusConstant
 from .core import linear
-from .reduce import Max, Argmax, Mean, Min, ReduceL2, Sum
-from .reshaping import Split, Slice
+from .reduce import Argmax, Max, Mean, Min, ReduceL2, Sum
+from .reshaping import Slice, Split

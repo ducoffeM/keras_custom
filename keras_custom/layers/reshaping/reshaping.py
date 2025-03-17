@@ -1,6 +1,7 @@
 import keras
 import numpy as np
 
+
 @keras.saving.register_keras_serializable()
 class Slice(keras.layers.Layer):
     """
@@ -34,7 +35,9 @@ class Slice(keras.layers.Layer):
 
     def get_config(self):
         config = super().get_config()
-        config.update({"axis": self.axis, "starts": self.starts, "ends": self.ends, "steps": self.steps})
+        config.update(
+            {"axis": self.axis, "starts": self.starts, "ends": self.ends, "steps": self.steps}
+        )
         return config
 
     def compute_output_shape(self, input_shape):
@@ -55,6 +58,7 @@ class Slice(keras.layers.Layer):
         ends = keras.saving.deserialize_keras_object(ends_config)
         steps = keras.saving.deserialize_keras_object(steps_config)
         return cls(axis=axis, starts=starts, ends=ends, steps=steps, **config)
+
 
 @keras.saving.register_keras_serializable()
 class Split(keras.layers.Layer):

@@ -1,6 +1,7 @@
 # define non native class Min
-import keras #type:ignore
+import keras  # type:ignore
 from keras_custom.layers.reduce.base_reduce import BaseAxisKeepdimsLayer
+
 
 @keras.saving.register_keras_serializable()
 class Min(BaseAxisKeepdimsLayer):

@@ -1,7 +1,7 @@
-import keras #type:ignore
+import keras  # type:ignore
+from keras.layers import ZeroPadding2D  # type: ignore
 from keras.src import ops  # type: ignore
 
-from keras.layers import ZeroPadding2D  # type: ignore
 
 @keras.saving.register_keras_serializable()
 class ConstantPadding2D(ZeroPadding2D):
