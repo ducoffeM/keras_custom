@@ -1,6 +1,7 @@
 # define non native class Max
 # Decomon Custom for Max(axis...)
 import keras  # type:ignore
+import keras.ops as K  # type:ignore
 from keras_custom.layers.reduce.base_reduce import BaseAxisKeepdimsLayer
 
 
@@ -13,7 +14,7 @@ class Max(BaseAxisKeepdimsLayer):
 
     def call(self, inputs_):
         """Computes the maximum value along the specified axis, retaining dimensions if keepdims is True."""
-        return keras.ops.max(inputs_, axis=self.axis, keepdims=self.keepdims)
+        return K.max(inputs_, axis=self.axis, keepdims=self.keepdims)
 
 
 @keras.saving.register_keras_serializable()
@@ -25,4 +26,4 @@ class Argmax(BaseAxisKeepdimsLayer):
 
     def call(self, inputs_):
         """Computes the index of the maximum value along the specified axis, retaining dimensions if keepdims is True."""
-        return keras.ops.argmax(inputs_, axis=self.axis, keepdims=self.keepdims)
+        return K.argmax(inputs_, axis=self.axis, keepdims=self.keepdims)

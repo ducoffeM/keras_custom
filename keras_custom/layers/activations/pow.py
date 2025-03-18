@@ -8,12 +8,6 @@ class Pow(keras.layers.Layer):
     """
 
     def __init__(self, power: int, **kwargs):
-        """
-        Initializes the Pow layer with a specified exponent.
-
-        Args:
-            power: The exponent to which each element in the input tensor will be raised.
-        """
         super(Pow, self).__init__(**kwargs)
         self.power: int = power
 

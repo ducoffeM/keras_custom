@@ -27,14 +27,15 @@ class Log(keras.layers.Layer):
     values must be strictly positive, as the log of non-positive numbers is undefined.
 
     Example:
-        ```python
-        import tensorflow as tf
+        .. code-block:: python
 
-        log_layer = Log()
-        input_data = tf.constant([[1.0, 2.0, 10.0]])
-        output_data = log_layer(input_data)
-        # Output will be approximately: [[0.0, 0.6931, 2.3026]]
-        ```
+            import tensorflow as tf
+
+            log_layer = Log()
+            input_data = tf.constant([[1.0, 2.0, 10.0]])
+            output_data = log_layer(input_data)
+            # Output will be approximately: [[0.0, 0.6931, 2.3026]]
+
     """
 
     def call(self, inputs_):
@@ -54,14 +55,14 @@ class Floor(keras.layers.Layer):
     of tensor elements should be removed.
 
     Example:
-        ```python
-        import tensorflow as tf
+        .. code-block:: python
 
-        floor_layer = Floor()
-        input_data = tf.constant([[1.7, 2.9, -0.3]])
-        output_data = floor_layer(input_data)
-        # Output will be: [[1.0, 2.0, -1.0]]
-        ```
+            import tensorflow as tf
+
+            floor_layer = Floor()
+            input_data = tf.constant([[1.7, 2.9, -0.3]])
+            output_data = floor_layer(input_data)
+            # Output will be: [[1.0, 2.0, -1.0]]
     """
 
     def call(self, inputs_):
@@ -76,33 +77,23 @@ class Clip(keras.layers.Layer):
     """
     Custom Keras Layer that clips the values of a Keras Tensor element-wise, within a specified range.
 
-    This layer performs element-wise clipping, setting values below a given minimum (`vmin`) to that minimum
+    This layer performs element-wise clipping, setting values below a given minimum (vmin) to that minimum
     and values above a given maximum (`vmax`) to that maximum. This is useful for constraining values
     in a neural network layer to a fixed range during forward propagation.
 
-    Attributes:
-
-
     Example:
-        ```python
-        import tensorflow as tf
 
-        clip_layer = Clip(vmin=0.0, vmax=1.0)
-        input_data = tf.constant([[-1.0, 0.5, 2.0]])
-        output_data = clip_layer(input_data)
-        # Output will be: [[0.0, 0.5, 1.0]]
-        ```
+        .. code-block:: python
+
+            import tensorflow as tf
+
+            clip_layer = Clip(vmin=0.0, vmax=1.0)
+            input_data = tf.constant([[-1.0, 0.5, 2.0]])
+            output_data = clip_layer(input_data)
+            # Output will be: [[0.0, 0.5, 1.0]]
     """
 
     def __init__(self, vmin: float, vmax: float, **kwargs):
-        """
-        Compute clipping
-        Args:
-            vmin: The minimum bound for clipping values. Any element in the input tensor below this
-                      value is set to `vmin`.
-            vmax: The maximum bound for clipping values. Any element in the input tensor above this
-                      value is set to `vmax`.
-        """
         super(Clip, self).__init__(**kwargs)
         self.vmin: float = vmin
         self.vmax: float = vmax

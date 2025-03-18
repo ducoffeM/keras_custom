@@ -1,5 +1,5 @@
 import keras
-import keras.ops as K
+import keras.ops as K  # type:ignore
 
 
 @keras.saving.register_keras_serializable()

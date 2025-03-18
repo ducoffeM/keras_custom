@@ -1,4 +1,5 @@
 import keras  # type:ignore
+import keras.ops as K  # type:ignore
 from keras_custom.layers.reduce.base_reduce import BaseAxisKeepdimsLayer
 
 
@@ -11,4 +12,4 @@ class Sum(BaseAxisKeepdimsLayer):
 
     def call(self, inputs_):
         """Computes the sum along the specified axis, retaining dimensions if keepdims is True."""
-        return keras.ops.sum(inputs_, axis=self.axis, keepdims=self.keepdims)
+        return K.sum(inputs_, axis=self.axis, keepdims=self.keepdims)
