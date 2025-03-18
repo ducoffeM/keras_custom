@@ -21,10 +21,3 @@ Keras Custom Activations
 
 .. autoclass:: keras_custom.layers.activations.pow.Pow
     :undoc-members: call, get_config, compute_output_shape
-
-
-
-
-
-
-

@@ -17,4 +17,3 @@ keras_custom documentation
    ./cast.rst
    ./constant.rst
    ./reduce.rst
-
