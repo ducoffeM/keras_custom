@@ -43,7 +43,7 @@ jobs:
       # 3. Déploiement sur les Github Pages
 
       - name: "Deploy Github Pages"
-        uses: ducoffeM/actions-gh-pages@v3
+        uses: actions/checkout@v4
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: gh-pages # <- Branche sur laquelle seront commités les fichiers
