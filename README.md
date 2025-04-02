@@ -49,7 +49,7 @@ Whether you're exploring new architectures, conducting research, or building com
 You can install ``keras custom`` directly from pypi:
 
 ```python
-pip install kerascustom
+pip install keras_custom
 ```
 
 In order to use ``keras custom``, you also need a [valid Keras
