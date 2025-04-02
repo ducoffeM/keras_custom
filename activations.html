@@ -1,0 +1,233 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Keras Custom Activations &mdash; Keras Custom  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Keras Custom Cast" href="cast.html" />
+    <link rel="prev" title="keras_custom documentation" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Keras Custom
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Keras Custom Activations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#keras_custom.layers.activations.activation.Clip"><code class="docutils literal notranslate"><span class="pre">Clip</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#keras_custom.layers.activations.activation.Floor"><code class="docutils literal notranslate"><span class="pre">Floor</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#keras_custom.layers.activations.activation.Floor.call"><code class="docutils literal notranslate"><span class="pre">Floor.call()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#keras_custom.layers.activations.activation.Floor.compute_output_shape"><code class="docutils literal notranslate"><span class="pre">Floor.compute_output_shape()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#keras_custom.layers.activations.activation.Identity"><code class="docutils literal notranslate"><span class="pre">Identity</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#keras_custom.layers.activations.activation.Identity.call"><code class="docutils literal notranslate"><span class="pre">Identity.call()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#keras_custom.layers.activations.activation.Identity.compute_output_shape"><code class="docutils literal notranslate"><span class="pre">Identity.compute_output_shape()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#keras_custom.layers.activations.activation.Log"><code class="docutils literal notranslate"><span class="pre">Log</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#keras_custom.layers.activations.activation.Log.call"><code class="docutils literal notranslate"><span class="pre">Log.call()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#keras_custom.layers.activations.activation.Log.compute_output_shape"><code class="docutils literal notranslate"><span class="pre">Log.compute_output_shape()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#keras_custom.layers.activations.pow.Pow"><code class="docutils literal notranslate"><span class="pre">Pow</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cast.html">Keras Custom Cast</a></li>
+<li class="toctree-l1"><a class="reference internal" href="constant.html">Keras Custom Constant</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reduce.html">Keras Custom Reduce</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Keras Custom</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Keras Custom Activations</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/activations.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="keras-custom-activations">
+<h1>Keras Custom Activations<a class="headerlink" href="#keras-custom-activations" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="keras_custom.layers.activations.activation.Clip">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">keras_custom.layers.activations.activation.</span></span><span class="sig-name descname"><span class="pre">Clip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#keras_custom.layers.activations.activation.Clip" title="Link to this definition"></a></dt>
+<dd><p>Custom Keras Layer that clips the values of a Keras Tensor element-wise, within a specified range.</p>
+<p>This layer performs element-wise clipping, setting values below a given minimum (vmin) to that minimum
+and values above a given maximum (<cite>vmax</cite>) to that maximum. This is useful for constraining values
+in a neural network layer to a fixed range during forward propagation.</p>
+<p>Example:</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+
+<span class="n">clip_layer</span> <span class="o">=</span> <span class="n">Clip</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="n">input_data</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([[</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">]])</span>
+<span class="n">output_data</span> <span class="o">=</span> <span class="n">clip_layer</span><span class="p">(</span><span class="n">input_data</span><span class="p">)</span>
+<span class="c1"># Output will be: [[0.0, 0.5, 1.0]]</span>
+</pre></div>
+</div>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="keras_custom.layers.activations.activation.Floor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">keras_custom.layers.activations.activation.</span></span><span class="sig-name descname"><span class="pre">Floor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#keras_custom.layers.activations.activation.Floor" title="Link to this definition"></a></dt>
+<dd><p>Custom Keras Layer that applies the floor operation to each element in the input tensor.</p>
+<p>This layer rounds down each element in the input tensor to the nearest integer. It is often
+used in scenarios where discrete, integer values are needed, or where fractional components
+of tensor elements should be removed.</p>
+<dl>
+<dt>Example:</dt><dd><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+
+<span class="n">floor_layer</span> <span class="o">=</span> <span class="n">Floor</span><span class="p">()</span>
+<span class="n">input_data</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([[</span><span class="mf">1.7</span><span class="p">,</span> <span class="mf">2.9</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.3</span><span class="p">]])</span>
+<span class="n">output_data</span> <span class="o">=</span> <span class="n">floor_layer</span><span class="p">(</span><span class="n">input_data</span><span class="p">)</span>
+<span class="c1"># Output will be: [[1.0, 2.0, -1.0]]</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="keras_custom.layers.activations.activation.Floor.call">
+<span class="sig-name descname"><span class="pre">call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs_</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#keras_custom.layers.activations.activation.Floor.call" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="keras_custom.layers.activations.activation.Floor.compute_output_shape">
+<span class="sig-name descname"><span class="pre">compute_output_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_shape</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#keras_custom.layers.activations.activation.Floor.compute_output_shape" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="keras_custom.layers.activations.activation.Identity">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">keras_custom.layers.activations.activation.</span></span><span class="sig-name descname"><span class="pre">Identity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#keras_custom.layers.activations.activation.Identity" title="Link to this definition"></a></dt>
+<dd><p>Custom Keras Layer that outputs the input tensor unchanged, acting as an identity operation.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="keras_custom.layers.activations.activation.Identity.call">
+<span class="sig-name descname"><span class="pre">call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs_</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#keras_custom.layers.activations.activation.Identity.call" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="keras_custom.layers.activations.activation.Identity.compute_output_shape">
+<span class="sig-name descname"><span class="pre">compute_output_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_shape</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#keras_custom.layers.activations.activation.Identity.compute_output_shape" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="keras_custom.layers.activations.activation.Log">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">keras_custom.layers.activations.activation.</span></span><span class="sig-name descname"><span class="pre">Log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#keras_custom.layers.activations.activation.Log" title="Link to this definition"></a></dt>
+<dd><p>Custom Keras Layer that applies the natural logarithm (log) operation to each element in the input tensor.</p>
+<p>This layer performs an element-wise natural logarithm on the input tensor, which is useful for various
+mathematical and preprocessing applications where log transformations are applied to data. Note that input
+values must be strictly positive, as the log of non-positive numbers is undefined.</p>
+<dl>
+<dt>Example:</dt><dd><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+
+<span class="n">log_layer</span> <span class="o">=</span> <span class="n">Log</span><span class="p">()</span>
+<span class="n">input_data</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">]])</span>
+<span class="n">output_data</span> <span class="o">=</span> <span class="n">log_layer</span><span class="p">(</span><span class="n">input_data</span><span class="p">)</span>
+<span class="c1"># Output will be approximately: [[0.0, 0.6931, 2.3026]]</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="keras_custom.layers.activations.activation.Log.call">
+<span class="sig-name descname"><span class="pre">call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs_</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#keras_custom.layers.activations.activation.Log.call" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="keras_custom.layers.activations.activation.Log.compute_output_shape">
+<span class="sig-name descname"><span class="pre">compute_output_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_shape</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#keras_custom.layers.activations.activation.Log.compute_output_shape" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="keras_custom.layers.activations.pow.Pow">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">keras_custom.layers.activations.pow.</span></span><span class="sig-name descname"><span class="pre">Pow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#keras_custom.layers.activations.pow.Pow" title="Link to this definition"></a></dt>
+<dd><p>Custom Keras Layer that raises each element of the input tensor to a specified power.</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="keras_custom documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="cast.html" class="btn btn-neutral float-right" title="Keras Custom Cast" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Melanie Ducoffe.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
