@@ -215,7 +215,6 @@ def switch_channel_layer(
         # assess that every input is in the same order
         perm_indices = np.where([f == original_order for f in forward_order])[0]
         if len(perm_indices) == len(forward_order):
-            print("H", layer.__class__.__name__)
             return layer(input_tensor), original_order
         if len(perm_indices) != 0:
             # permute every input indices to be in the forward channel order
@@ -223,12 +222,10 @@ def switch_channel_layer(
                 input_tensor[i] = get_permute(input_tensor[i])
             forward_order = switch_order(original_order)
             # no merging layer has data_format, we can apply it directly
-            print("G", layer.__class__.__name__)
             return layer(input_tensor), forward_order
         return layer(input_tensor), switch_order(original_order)
 
     if original_order == forward_order:
-        print("F", layer.__class__.__name__)
         return layer(input_tensor), forward_order
     if isinstance(layer, Model) or isinstance(layer, Sequential):
         if len(layer.inputs) > 1:
@@ -240,7 +237,6 @@ def switch_channel_layer(
         # special case, Flatten has a data_format attribute but after Flatten we loose the channel dimension
         # we need to permute first
         input_tensor_perm = get_permute(input_tensor)
-        print("E", layer.__class__.__name__)
         return layer(input_tensor_perm), original_order
     if hasattr(layer, "data_format"):
         config = layer.get_config()
@@ -250,7 +246,6 @@ def switch_channel_layer(
         _ = layer_switch(input_tensor)
         if hasattr(layer_switch, "set_weights"):
             layer_switch.set_weights(layer.get_weights())
-        # print('D', layer.__class__.__name__)
         return layer_switch(input_tensor), forward_order
     if hasattr(layer, "axis"):
         N = len(layer.input.shape[1:])
@@ -266,10 +261,8 @@ def switch_channel_layer(
             _ = layer_switch(input_tensor)
             if hasattr(layer_switch, "set_weights"):
                 layer_switch.set_weights(layer.get_weights())
-            # print('C', layer.__class__.__name__)
             return layer_switch(input_tensor), forward_order
         else:
-            # print('B', layer.__class__.__name__)
             return layer(input_tensor), forward_order
     # if layer is reshaping, do a dedicated copy
     if max(
@@ -279,7 +272,6 @@ def switch_channel_layer(
         ]
     ):
         # permute input
-        # print('A', layer.__class__.__name__)
         input_tensor_perm = get_permute(input_tensor)
         return layer(input_tensor_perm), original_order
     else:

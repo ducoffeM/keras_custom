@@ -61,6 +61,7 @@ supports Keras versions 3.x.
 | **Tutorial Name**           | Notebook                                                                                                                                                           |
 | :-------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------: |
 | Model splitting - Splitting an existing models into a sequence of nested models | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ducoffeM/keras_custom/blob/main/tutorials/ModelSplitting.ipynb)            |
+| Model switching - Conversion to channel first to channel last and vice versa | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ducoffeM/keras_custom/blob/main/tutorials/SwitchingChannel.ipynb)            |
 | Model fusion - Combining a sequence of models into a single model with only Layers | Stay tuned !
 
 
