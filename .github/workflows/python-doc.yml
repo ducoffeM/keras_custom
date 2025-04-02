@@ -40,7 +40,7 @@ jobs:
         run: |
           make html
 
-      # 3. Déploiement sur les Github Pages
+      # 3. Déploiement sur les Github Pages.
 
       - name: "Deploy Github Pages"
         uses: actions/checkout@v4
