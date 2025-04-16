@@ -1,6 +1,6 @@
 import optparse
 
-from keras_custom.layers import Clip, Floor, Identity, Log
+from keras_custom.layers import Ceil, Clip, Floor, Identity, Log
 
 from .conftest import func_layer
 
@@ -31,6 +31,20 @@ def test_Floor():
     func_layer(layer, input_shape)
 
     layer = Floor()
+    input_shape = (1, 32, 32)
+    func_layer(layer, input_shape)
+
+
+def test_Ceil():
+    layer = Ceil()
+    input_shape = (2,)
+    func_layer(layer, input_shape)
+
+    layer = Ceil()
+    input_shape = (1, 32)
+    func_layer(layer, input_shape)
+
+    layer = Ceil()
     input_shape = (1, 32, 32)
     func_layer(layer, input_shape)
 

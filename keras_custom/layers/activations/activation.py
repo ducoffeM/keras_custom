@@ -65,8 +65,47 @@ class Floor(keras.layers.Layer):
             # Output will be: [[1.0, 2.0, -1.0]]
     """
 
+    @keras.ops.custom_gradient
     def call(self, inputs_):
-        return keras.ops.floor(inputs_)
+        def grad(*args, upstream=None):
+            if upstream is None:
+                (upstream,) = args
+            return upstream
+
+        return keras.ops.floor(inputs_), grad
+
+    def compute_output_shape(self, input_shape):
+        return input_shape
+
+
+@keras.saving.register_keras_serializable()
+class Ceil(keras.layers.Layer):
+    """
+    Custom Keras Layer that applies the ceil operation to each element in the input tensor.
+
+    This layer rounds down each element in the input tensor to the nearest integer. It is often
+    used in scenarios where discrete, integer values are needed, or where fractional components
+    of tensor elements should be removed.
+
+    Example:
+        .. code-block:: python
+
+            import tensorflow as tf
+
+            ceil_layer = Ceil()
+            input_data = tf.constant([[1.7, 2.9, -0.3]])
+            output_data = ceil_layer(input_data)
+            # Output will be: [[2.0, 3.0, -0.0]]
+    """
+
+    @keras.ops.custom_gradient
+    def call(self, inputs_):
+        def grad(*args, upstream=None):
+            if upstream is None:
+                (upstream,) = args
+            return upstream
+
+        return keras.ops.ceil(inputs_), grad
 
     def compute_output_shape(self, input_shape):
         return input_shape
