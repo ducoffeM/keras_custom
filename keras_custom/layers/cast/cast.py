@@ -26,8 +26,14 @@ class Cast(keras.layers.Layer):
             11: "double",
         }
 
+    @keras.ops.custom_gradient
     def call(self, inputs_):
-        return keras.ops.cast(inputs_, self.cast_map[self.dtype_key])
+        def grad(*args, upstream=None):
+            if upstream is None:
+                (upstream,) = args
+            return upstream
+        
+        return keras.ops.cast(inputs_, self.cast_map[self.dtype_key]), grad
 
     def get_config(self):
         config = super().get_config()
