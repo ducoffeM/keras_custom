@@ -45,6 +45,16 @@ class Log(keras.layers.Layer):
         return input_shape
 
 
+@keras.ops.custom_gradient
+def floor(inputs):
+    def grad(*args, upstream=None):
+        if upstream is None:
+            (upstream,) = args
+        return upstream
+
+    return keras.ops.floor(inputs), grad
+
+
 @keras.saving.register_keras_serializable()
 class Floor(keras.layers.Layer):
     """
@@ -65,17 +75,21 @@ class Floor(keras.layers.Layer):
             # Output will be: [[1.0, 2.0, -1.0]]
     """
 
-    @keras.ops.custom_gradient
     def call(self, inputs_):
-        def grad(*args, upstream=None):
-            if upstream is None:
-                (upstream,) = args
-            return upstream
-
-        return keras.ops.floor(inputs_), grad
+        return floor(inputs_)
 
     def compute_output_shape(self, input_shape):
         return input_shape
+
+
+@keras.ops.custom_gradient
+def ceil(inputs_):
+    def grad(*args, upstream=None):
+        if upstream is None:
+            (upstream,) = args
+        return upstream
+
+    return keras.ops.ceil(inputs_), grad
 
 
 @keras.saving.register_keras_serializable()
@@ -98,14 +112,8 @@ class Ceil(keras.layers.Layer):
             # Output will be: [[2.0, 3.0, -0.0]]
     """
 
-    @keras.ops.custom_gradient
     def call(self, inputs_):
-        def grad(*args, upstream=None):
-            if upstream is None:
-                (upstream,) = args
-            return upstream
-
-        return keras.ops.ceil(inputs_), grad
+        return ceil(inputs_)
 
     def compute_output_shape(self, input_shape):
         return input_shape
