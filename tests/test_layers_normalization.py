@@ -3,7 +3,7 @@ from keras_custom.layers import ReduceL2
 from .conftest import func_layer
 
 
-def test_Max():
+def test_ReduceL2():
     layer = ReduceL2(axis=-1, keepdims=True)
 
     input_shape = (2,)

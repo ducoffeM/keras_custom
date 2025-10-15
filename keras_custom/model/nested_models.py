@@ -86,7 +86,6 @@ def get_nested_model(
         input_shape_wo_batch = layer_in.output.shape[1:]
 
     nested_input = keras.layers.Input(input_shape_wo_batch)
-    print(nested_input)
 
     node_out_list = [
         n

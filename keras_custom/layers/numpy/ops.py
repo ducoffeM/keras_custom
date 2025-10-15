@@ -1227,6 +1227,87 @@ class LogAddExp(keras.layers.Layer):
 
 
 @keras.saving.register_keras_serializable()
+class Matmul(keras.layers.Layer):
+    """
+    A Keras layer to compute the matrix product of two tensors.
+
+    This layer is a wrapper for `keras.ops.matmul`. It takes a list of two
+    tensors as input. For 2D tensors, the shapes must be `(a, b)` and
+    `(b, c)`, and the output will be `(a, c)`. The layer also supports
+    batch matrix multiplication.
+    """
+
+    def __init__(self, **kwargs):
+        """
+        Initializes the Matmul layer.
+        """
+        super().__init__(**kwargs)
+
+    def call(self, inputs):
+        """
+        Applies the matrix multiplication operation.
+
+        Args:
+            inputs: A list or tuple of two tensors, `[x1, x2]`.
+
+        Returns:
+            The tensor resulting from the matrix product.
+        """
+        if not isinstance(inputs, (list, tuple)) or len(inputs) != 2:
+            raise ValueError("Input to Matmul layer must be a list of two tensors.")
+        x1, x2 = inputs
+        return ops.matmul(x1, x2)
+
+    def get_ops(self):
+        return lambda x: ops.matmul(x[0], x[1])
+
+    def compute_output_shape(self, input_shape):
+        """
+        Computes the output shape of the layer.
+        """
+        if not isinstance(input_shape, (list, tuple)) or len(input_shape) != 2:
+            raise ValueError("Input shape must be a list of two shapes.")
+
+        shape1, shape2 = input_shape
+
+        if len(shape1) < 2 or len(shape2) < 2:
+            raise ValueError("Inputs must be at least 2D for matrix multiplication.")
+
+        if shape1[-1] != shape2[-2]:
+            raise ValueError(
+                "The last dimension of the first input must match the "
+                f"second-to-last dimension of the second input. "
+                f"Received shapes {shape1} and {shape2}."
+            )
+
+        # Handle broadcasting for batch dimensions
+        batch_shape1 = list(shape1[:-2])
+        batch_shape2 = list(shape2[:-2])
+
+        s1_rev = batch_shape1[::-1]
+        s2_rev = batch_shape2[::-1]
+        max_len = max(len(s1_rev), len(s2_rev))
+
+        output_batch_shape_rev = []
+        for i in range(max_len):
+            d1 = s1_rev[i] if i < len(s1_rev) else 1
+            d2 = s2_rev[i] if i < len(s2_rev) else 1
+
+            if d1 is None or d2 is None:
+                output_batch_shape_rev.append(None)
+            elif d1 == d2 or d1 == 1 or d2 == 1:
+                output_batch_shape_rev.append(max(d1, d2))
+            else:
+                raise ValueError(
+                    f"Batch shapes {shape1[:-2]} and {shape2[:-2]} are not broadcastable."
+                )
+
+        output_batch_shape = tuple(output_batch_shape_rev[::-1])
+
+        return output_batch_shape + (shape1[-2], shape2[-1])
+
+
+@keras.saving.register_keras_serializable()
 class Maximum(keras.layers.Layer):
     """
     A Keras layer to compute the element-wise maximum of two tensors.
@@ -1461,6 +1542,73 @@ class Negative(keras.layers.Layer):
 
 
 @keras.saving.register_keras_serializable()
+class Norm(keras.layers.Layer):
+    """
+    A Keras layer to compute the norm of a tensor.
+
+    This layer is a wrapper for `keras.ops.norm`. It can compute vector
+    norms along a given axis or matrix norms over a pair of axes.
+
+    Args:
+        ord (int, float, 'fro', 'inf', optional): The order of the norm.
+            See `keras.ops.norm` documentation for details. Defaults to None.
+        axis (int, tuple of ints, optional): The axis or axes along which
+            to compute the norm. If None, the norm is computed over the
+            entire tensor. Defaults to None.
+        keepdims (bool, optional): If True, the axes which are normed over
+            are left in the result as dimensions with size 1. Defaults to False.
+    """
+
+    def __init__(self, ord=None, axis=None, keepdims=False, **kwargs):
+        """
+        Initializes the Norm layer.
+        """
+        super().__init__(**kwargs)
+        self.ord = ord
+        self.axis = axis
+        self.keepdims = keepdims
+
+    def call(self, inputs):
+        """
+        Applies the norm operation.
+
+        Args:
+            inputs: The input tensor.
+
+        Returns:
+            A tensor containing the computed norms.
+        """
+        return ops.norm(inputs, ord=self.ord, axis=self.axis, keepdims=self.keepdims)
+
+    def get_ops(self):
+        return lambda x: ops.norm(x, ord=self.ord, axis=self.axis, keepdims=self.keepdims)
+
+    def compute_output_shape(self, input_shape):
+        """
+        Computes the output shape of the layer.
+        """
+        if self.axis is None:
+            if self.keepdims:
+                return (1,) * len(input_shape)
+            else:
+                return ()
+
+        # Normalize axis to be a tuple of positive integers
+        rank = len(input_shape)
+        axis = self.axis if isinstance(self.axis, (list, tuple)) else (self.axis,)
+        axis = [ax if ax >= 0 else rank + ax for ax in axis]
+
+        if self.keepdims:
+            output_shape = list(input_shape)
+            for ax in axis:
+                output_shape[ax] = 1
+            return tuple(output_shape)
+        else:
+            output_shape = [dim for i, dim in enumerate(input_shape) if i not in axis]
+            return tuple(output_shape)
+
+
+@keras.saving.register_keras_serializable()
 class OnesLike(keras.layers.Layer):
     """
     A Keras layer that creates a tensor of ones with the same shape as
@@ -1488,6 +1636,79 @@ class OnesLike(keras.layers.Layer):
 
     def get_ops(self):
         return ops.ones_like
+
+
+@keras.saving.register_keras_serializable()
+class Prod(keras.layers.Layer):
+    """
+    A Keras layer to compute the product of tensor elements over given axes.
+
+    This layer is a wrapper for `keras.ops.prod`.
+
+    Args:
+        axis (int, tuple of ints, optional): The axis or axes along which
+            to compute the product. If None, the product of all elements is
+            computed. Defaults to None.
+        keepdims (bool, optional): If True, the reduced axes are left in the
+            result as dimensions with size 1. Defaults to False.
+    """
+
+    def __init__(self, axis=None, keepdims=False, **kwargs):
+        """
+        Initializes the Prod layer.
+        """
+        super().__init__(**kwargs)
+        self.axis = axis
+        self.keepdims = keepdims
+
+    def call(self, inputs):
+        """
+        Applies the product operation.
+
+        Args:
+            inputs: The input tensor.
+
+        Returns:
+            A tensor with the products.
+        """
+        return ops.prod(
+            inputs,
+            axis=self.axis,
+            keepdims=self.keepdims,
+            dtype=inputs.dtype,
+        )
+
+    def get_ops(self):
+        return lambda x: ops.prod(
+            x,
+            axis=self.axis,
+            keepdims=self.keepdims,
+            dtype=x.dtype,
+        )
+
+    def compute_output_shape(self, input_shape):
+        """
+        Computes the output shape of the layer.
+        """
+        if self.axis is None:
+            if self.keepdims:
+                return (1,) * len(input_shape)
+            else:
+                return ()
+
+        # Normalize axis to be a tuple of positive integers
+        rank = len(input_shape)
+        axis = self.axis if isinstance(self.axis, (list, tuple)) else (self.axis,)
+        axis = [ax if ax >= 0 else rank + ax for ax in axis]
+
+        if self.keepdims:
+            output_shape = list(input_shape)
+            for ax in axis:
+                output_shape[ax] = 1
+            return tuple(output_shape)
+        else:
+            output_shape = [dim for i, dim in enumerate(input_shape) if i not in axis]
+            return tuple(output_shape)
 
 
 @keras.saving.register_keras_serializable()
@@ -1577,6 +1798,946 @@ class Repeat(keras.layers.Layer):
                 output_shape[self.axis] = None
 
             return tuple(output_shape)
+
+
+@keras.saving.register_keras_serializable()
+class Roll(keras.layers.Layer):
+    """
+    A Keras layer to roll tensor elements along a given axis.
+
+    This layer is a wrapper for `keras.ops.roll`. Elements that are shifted
+    off the end of an axis are re-introduced at the beginning.
+
+    Args:
+        shift (int or tuple of ints): The number of places by which elements
+            are shifted. If a tuple, it must be the same length as `axis`.
+        axis (int or tuple of ints, optional): The axis or axes along which
+            to roll. If None, the tensor is flattened before rolling and then
+            reshaped to its original shape. Defaults to None.
+    """
+
+    def __init__(self, shift, axis=None, **kwargs):
+        """
+        Initializes the Roll layer.
+        """
+        super().__init__(**kwargs)
+        self.shift = shift
+        self.axis = axis
+
+    def call(self, inputs):
+        """
+        Applies the roll operation.
+
+        Args:
+            inputs: The input tensor.
+
+        Returns:
+            A new tensor with elements rolled.
+        """
+        return ops.roll(inputs, shift=self.shift, axis=self.axis)
+
+    def get_ops(self):
+        return lambda x: ops.roll(x, shift=self.shift, axis=self.axis)
+
+
+@keras.saving.register_keras_serializable()
+class Round(keras.layers.Layer):
+    """
+    A Keras layer to round the elements of a tensor to the nearest value.
+
+    This layer is a wrapper for `keras.ops.round`.
+
+    Args:
+        decimals (int, optional): The number of decimal places to round to.
+            If 0, the tensor is rounded to the nearest integer. Defaults to 0.
+    """
+
+    def __init__(self, decimals=0, **kwargs):
+        """
+        Initializes the Round layer.
+        """
+        super().__init__(**kwargs)
+        self.decimals = decimals
+
+    def call(self, inputs):
+        """
+        Applies the round operation.
+
+        Args:
+            inputs: The input tensor.
+
+        Returns:
+            A new tensor with elements rounded.
+        """
+        return ops.round(inputs, decimals=self.decimals)
+
+    def get_ops(self):
+        return lambda x: ops.round(x, decimals=self.decimals)
+
+
+@keras.saving.register_keras_serializable()
+class Sign(keras.layers.Layer):
+    """
+    A Keras layer to compute the element-wise sign of a tensor.
+
+    This layer is a wrapper for `keras.ops.sign`. It returns -1 for negative
+    elements, 0 for zero, and 1 for positive elements.
+    """
+
+    def __init__(self, **kwargs):
+        """
+        Initializes the Sign layer.
+        """
+        super().__init__(**kwargs)
+
+    def call(self, inputs):
+        """
+        Applies the sign operation.
+
+        Args:
+            inputs: The input tensor.
+
+        Returns:
+            A new tensor containing the signs of the input elements.
+        """
+        return ops.sign(inputs)
+
+    def get_ops(self):
+        return ops.sign
+
+
+@keras.saving.register_keras_serializable()
+class Sin(keras.layers.Layer):
+    """
+    A Keras layer to compute the element-wise sine of a tensor.
+
+    This layer is a wrapper for `keras.ops.sin`. The input tensor is
+    assumed to be in radians.
+    """
+
+    def __init__(self, **kwargs):
+        """
+        Initializes the Sin layer.
+        """
+        super().__init__(**kwargs)
+
+    def call(self, inputs):
+        """
+        Applies the sine operation.
+
+        Args:
+            inputs: The input tensor (in radians).
+
+        Returns:
+            A new tensor containing the sines of the input elements.
+        """
+        return ops.sin(inputs)
+
+    def get_ops(self):
+        return ops.sin
+
+
+@keras.saving.register_keras_serializable()
+class Sinh(keras.layers.Layer):
+    """
+    A Keras layer to compute the element-wise hyperbolic sine of a tensor.
+
+    This layer is a wrapper for `keras.ops.sinh`.
+    """
+
+    def __init__(self, **kwargs):
+        """
+        Initializes the Sinh layer.
+        """
+        super().__init__(**kwargs)
+
+    def call(self, inputs):
+        """
+        Applies the hyperbolic sine operation.
+
+        Args:
+            inputs: The input tensor.
+
+        Returns:
+            A new tensor containing the hyperbolic sines of the input elements.
+        """
+        return ops.sinh(inputs)
+
+    def get_ops(self):
+        return ops.sinh
+
+
+@keras.saving.register_keras_serializable()
+class Sort(keras.layers.Layer):
+    """
+    A Keras layer to sort the elements of a tensor along an axis.
+
+    This layer is a wrapper for `keras.ops.sort`.
+
+    Args:
+        axis (int, optional): The axis along which to sort. The default is -1,
+            which sorts along the last axis. If None, the tensor is
+            flattened before sorting. Defaults to -1.
+        descending (bool, optional): If True, sorts in descending order;
+            otherwise, sorts in ascending order. Defaults to False.
+    """
+
+    def __init__(self, axis=-1, descending=False, **kwargs):
+        """
+        Initializes the Sort layer.
+        """
+        super().__init__(**kwargs)
+        self.axis = axis
+        self.descending = descending
+
+    def call(self, inputs):
+        """
+        Applies the sort operation.
+
+        Args:
+            inputs: The input tensor.
+
+        Returns:
+            A new tensor with elements sorted.
+        """
+        if self.descending:
+            return -ops.sort(-inputs, axis=self.axis)
+        else:
+            return ops.sort(inputs, axis=self.axis)
+
+    def get_ops(self):
+        def func(x):
+            if self.descending:
+                return -ops.sort(-x, axis=self.axis)
+            else:
+                return ops.sort(x, axis=self.axis)
+
+        return lambda x: func(x)
+
+
+@keras.saving.register_keras_serializable()
+class Sqrt(keras.layers.Layer):
+    """
+    A Keras layer to compute the element-wise square root of a tensor.
+
+    This layer is a wrapper for `keras.ops.sqrt`. Input values should be
+    non-negative.
+    """
+
+    def __init__(self, **kwargs):
+        """
+        Initializes the Sqrt layer.
+        """
+        super().__init__(**kwargs)
+
+    def call(self, inputs):
+        """
+        Applies the square root operation.
+
+        Args:
+            inputs: The input tensor.
+
+        Returns:
+            A new tensor containing the square roots of the input elements.
+        """
+        return ops.sqrt(inputs)
+
+    def get_ops(self):
+        return ops.sqrt
+
+
+@keras.saving.register_keras_serializable()
+class Square(keras.layers.Layer):
+    """
+    A Keras layer to compute the element-wise square of a tensor.
+
+    This layer is a wrapper for `keras.ops.square`.
+    """
+
+    def __init__(self, **kwargs):
+        """
+        Initializes the Square layer.
+        """
+        super().__init__(**kwargs)
+
+    def call(self, inputs):
+        """
+        Applies the square operation.
+
+        Args:
+            inputs: The input tensor.
+
+        Returns:
+            A new tensor containing the squares of the input elements.
+        """
+        return ops.square(inputs)
+
+    def get_ops(self):
+        return ops.square
+
+
+@keras.saving.register_keras_serializable()
+class Squeeze(keras.layers.Layer):
+    """
+    A Keras layer to remove dimensions of size 1 from a tensor's shape.
+
+    This layer is a wrapper for `keras.ops.squeeze`.
+
+    Args:
+        axis (int or tuple of ints, optional): The axis or axes to squeeze.
+            If an axis is specified, it is only removed if its size is 1.
+            If None, all dimensions of size 1 are removed. Defaults to None.
+    """
+
+    def __init__(self, axis=None, **kwargs):
+        """
+        Initializes the Squeeze layer.
+        """
+        super().__init__(**kwargs)
+        self.axis = axis
+
+    def call(self, inputs):
+        """
+        Applies the squeeze operation.
+
+        Args:
+            inputs: The input tensor.
+
+        Returns:
+            A new tensor with dimensions of size 1 removed.
+        """
+        return ops.squeeze(inputs, axis=self.axis)
+
+    def get_ops(self):
+        return lambda x: ops.squeeze(x, axis=self.axis)
+
+    def compute_output_shape(self, input_shape):
+        """
+        Computes the output shape after squeezing.
+        """
+        if self.axis is None:
+            # Squeeze all dimensions of size 1
+            return tuple(dim for dim in input_shape if dim != 1)
+        else:
+            # Squeeze specified axes
+            axis = self.axis if isinstance(self.axis, (list, tuple)) else (self.axis,)
+            rank = len(input_shape)
+            # Normalize axes to be positive
+            axis = [ax if ax >= 0 else rank + ax for ax in axis]
+
+            output_shape = []
+            for i, dim in enumerate(input_shape):
+                if i in axis:
+                    if dim != 1:
+                        # Keras ops would raise an error, so we should too.
+                        raise ValueError(
+                            f"Cannot squeeze axis {i} because its size is {dim}, not 1."
+                        )
+                    # Don't include this dimension in the output
+                    continue
+                output_shape.append(dim)
+            return tuple(output_shape)
+
+
+@keras.saving.register_keras_serializable()
+class Stack(keras.layers.Layer):
+    """
+    A Keras layer to stack a list of tensors along a new axis.
+
+    This layer is a wrapper for `keras.ops.stack`. All tensors in the
+    input list must have the same shape.
+
+    Args:
+        axis (int, optional): The axis in the result tensor along which the
+            input tensors are stacked. Defaults to -1.
+    """
+
+    def __init__(self, axis=-1, **kwargs):
+        """
+        Initializes the Stack layer.
+        """
+        super().__init__(**kwargs)
+        assert axis != 0
+        self.axis = axis
+
+    def call(self, inputs):
+        """
+        Applies the stack operation.
+
+        Args:
+            inputs: A list of tensors to be stacked.
+
+        Returns:
+            A single, stacked tensor.
+        """
+        if not isinstance(inputs, (list, tuple)):
+            raise ValueError("Input to Stack layer must be a list of tensors.")
+        return ops.stack(inputs, axis=self.axis)
+
+    def get_ops(self):
+        return lambda x: ops.stack(x, axis=self.axis)
+
+    def compute_output_shape(self, input_shape):
+        """
+        Computes the output shape of the layer.
+        """
+        if not isinstance(input_shape, (list, tuple)) or not input_shape:
+            raise ValueError("Input shape must be a list of shapes.")
+
+        # All input shapes must be identical.
+        ref_shape = input_shape[0]
+        for shape in input_shape[1:]:
+            if shape != ref_shape:
+                raise ValueError(
+                    "All tensors in a stack must have the same shape. "
+                    f"Got {ref_shape} and {shape}."
+                )
+
+        # The output shape is the reference shape with a new dimension inserted.
+        output_shape = list(ref_shape)
+        output_shape.insert(self.axis, len(input_shape))
+
+        return tuple(output_shape)
+
+
+@keras.saving.register_keras_serializable()
+class Std(keras.layers.Layer):
+    """
+    A Keras layer to compute the standard deviation of tensor elements.
+
+    This layer is a wrapper for `keras.ops.std`.
+
+    Args:
+        axis (int, tuple of ints, optional): The axis or axes along which
+            to compute the standard deviation. If None, the standard deviation
+            of all elements is computed. Defaults to None.
+        keepdims (bool, optional): If True, the reduced axes are left in the
+            result as dimensions with size 1. Defaults to False.
+    """
+
+    def __init__(self, axis=None, keepdims=False, **kwargs):
+        """
+        Initializes the Std layer.
+        """
+        super().__init__(**kwargs)
+        self.axis = axis
+        self.keepdims = keepdims
+
+    def call(self, inputs):
+        """
+        Applies the standard deviation operation.
+
+        Args:
+            inputs: The input tensor.
+
+        Returns:
+            A tensor with the standard deviations.
+        """
+        return ops.std(
+            inputs,
+            axis=self.axis,
+            keepdims=self.keepdims,
+        )
+
+    def get_ops(self):
+        return lambda x: ops.std(
+            x,
+            axis=self.axis,
+            keepdims=self.keepdims,
+        )
+
+    def compute_output_shape(self, input_shape):
+        """
+        Computes the output shape of the layer.
+        """
+        if self.axis is None:
+            if self.keepdims:
+                return (1,) * len(input_shape)
+            else:
+                return ()
+
+        # Normalize axis to be a tuple of positive integers
+        rank = len(input_shape)
+        axis = self.axis if isinstance(self.axis, (list, tuple)) else (self.axis,)
+        axis = [ax if ax >= 0 else rank + ax for ax in axis]
+
+        if self.keepdims:
+            output_shape = list(input_shape)
+            for ax in axis:
+                output_shape[ax] = 1
+            return tuple(output_shape)
+        else:
+            output_shape = [dim for i, dim in enumerate(input_shape) if i not in axis]
+            return tuple(output_shape)
+
+
+@keras.saving.register_keras_serializable()
+class SwapAxes(keras.layers.Layer):
+    """
+    A Keras layer to interchange two axes of a tensor.
+
+    This layer is a wrapper for `keras.ops.swapaxes`.
+
+    Args:
+        axis1 (int): The first axis to be swapped.
+        axis2 (int): The second axis to be swapped.
+    """
+
+    def __init__(self, axis1, axis2, **kwargs):
+        """
+        Initializes the SwapAxes layer.
+        """
+        super().__init__(**kwargs)
+        assert axis1 != 0
+        assert axis2 != 0
+        self.axis1 = axis1
+        self.axis2 = axis2
+
+    def call(self, inputs):
+        """
+        Applies the swapaxes operation.
+
+        Args:
+            inputs: The input tensor.
+
+        Returns:
+            A new tensor with the specified axes swapped.
+        """
+        return ops.swapaxes(inputs, axis1=self.axis1, axis2=self.axis2)
+
+    def get_ops(self):
+        return lambda x: ops.swapaxes(x, axis1=self.axis1, axis2=self.axis2)
+
+    def compute_output_shape(self, input_shape):
+        """
+        Computes the output shape by swapping the specified dimensions.
+        """
+        shape = list(input_shape)
+
+        # Swap the dimensions at the specified axes
+        shape[self.axis1], shape[self.axis2] = shape[self.axis2], shape[self.axis1]
+
+        return tuple(shape)
+
+
+@keras.saving.register_keras_serializable()
+class Tan(keras.layers.Layer):
+    """
+    A Keras layer to compute the element-wise tangent of a tensor.
+
+    This layer is a wrapper for `keras.ops.tan`. The input tensor is
+    assumed to be in radians.
+    """
+
+    def __init__(self, **kwargs):
+        """
+        Initializes the Tan layer.
+        """
+        super().__init__(**kwargs)
+
+    def call(self, inputs):
+        """
+        Applies the tangent operation.
+
+        Args:
+            inputs: The input tensor (in radians).
+
+        Returns:
+            A new tensor containing the tangents of the input elements.
+        """
+        return ops.tan(inputs)
+
+    def get_ops(self):
+        return ops.tan
+
+
+@keras.saving.register_keras_serializable()
+class Trace(keras.layers.Layer):
+    """
+    A Keras layer to compute the sum along the diagonals of a tensor.
+
+    This layer is a wrapper for `keras.ops.trace`. It reduces the rank of
+    the input tensor by 2.
+
+    Args:
+        offset (int, optional): The offset of the diagonal to trace. `k=0` is
+            the main diagonal. Defaults to 0.
+        axis1 (int, optional): The first axis of the 2D planes from which to
+            compute the trace. Defaults to 0.
+        axis2 (int, optional): The second axis of the 2D planes from which to
+            compute the trace. Defaults to 1.
+    """
+
+    def __init__(self, offset=0, axis1=1, axis2=2, **kwargs):
+        """
+        Initializes the Trace layer.
+        """
+        super().__init__(**kwargs)
+        self.offset = offset
+        assert axis1 != 0
+        assert axis2 != 0
+
+        self.axis1 = axis1
+        self.axis2 = axis2
+
+    def call(self, inputs):
+        """
+        Applies the trace operation.
+
+        Args:
+            inputs: The input tensor. Must be at least 2D.
+
+        Returns:
+            A tensor containing the trace.
+        """
+        return ops.trace(
+            inputs,
+            offset=self.offset,
+            axis1=self.axis1,
+            axis2=self.axis2,
+        )
+
+    def compute_output_shape(self, input_shape):
+        """
+        Computes the output shape of the layer.
+        """
+        rank = len(input_shape)
+        if rank < 2:
+            raise ValueError(f"Input must be at least 2D, but got rank {rank}.")
+
+        # Normalize axes
+        axis1 = self.axis1 if self.axis1 >= 0 else rank + self.axis1
+        axis2 = self.axis2 if self.axis2 >= 0 else rank + self.axis2
+
+        # The output shape is the input shape with the two traced axes removed
+        output_shape = [dim for i, dim in enumerate(input_shape) if i not in (axis1, axis2)]
+        return tuple(output_shape)
+
+    def get_ops(self):
+        return lambda x: ops.trace(
+            x,
+            offset=self.offset,
+            axis1=self.axis1,
+            axis2=self.axis2,
+        )
+
+
+@keras.saving.register_keras_serializable()
+class Transpose(keras.layers.Layer):
+    """
+    A Keras layer to permute the dimensions of a tensor.
+
+    This layer is a wrapper for `keras.ops.transpose`.
+
+    Args:
+        axes (list or tuple of ints, optional): A permutation of the dimensions
+            of the input tensor. If None, the order of the dimensions is
+            reversed. Defaults to None.
+    """
+
+    def __init__(self, axes=None, **kwargs):
+        """
+        Initializes the Transpose layer.
+        """
+        super().__init__(**kwargs)
+        self.axes = axes
+
+    def call(self, inputs):
+        """
+        Applies the transpose operation.
+
+        Args:
+            inputs: The input tensor.
+
+        Returns:
+            A new tensor with its axes permuted.
+        """
+        return ops.transpose(inputs, axes=self.axes)
+
+    def get_ops(self):
+        return lambda x: ops.transpose(x, axes=self.axes)
+
+    def compute_output_shape(self, input_shape):
+        """
+        Computes the output shape by reordering the input shape's dimensions.
+        """
+        if self.axes is None:
+            # If no axes are specified, reverse the shape
+            return input_shape[::-1]
+
+        # Build the new shape according to the axes permutation
+        return tuple(input_shape[i] for i in self.axes)
+
+
+@keras.saving.register_keras_serializable()
+class Tril(keras.layers.Layer):
+    """
+    A Keras layer to extract the lower triangular part of a tensor.
+
+    This layer is a wrapper for `keras.ops.tril`. Elements above the k-th
+    diagonal are zeroed out.
+
+    Args:
+        k (int, optional): The diagonal to consider. `k=0` is the main
+            diagonal, `k<0` is below, and `k>0` is above. Defaults to 0.
+    """
+
+    def __init__(self, k=0, **kwargs):
+        """
+        Initializes the Tril layer.
+        """
+        super().__init__(**kwargs)
+        self.k = k
+
+    def call(self, inputs):
+        """
+        Applies the tril operation.
+
+        Args:
+            inputs: The input tensor. Must be at least 2D.
+
+        Returns:
+            A new tensor with the upper triangular part zeroed out.
+        """
+        return ops.tril(inputs, k=self.k)
+
+    def get_ops(self):
+        return lambda x: ops.tril(x, k=self.k)
+
+    def compute_output_shape(self, input_shape):
+        """
+        Computes the output shape of the layer.
+
+        Since this operation does not change the tensor's shape, this method
+        returns the input shape unchanged.
+
+        Args:
+            input_shape: Shape of the input tensor.
+
+        Returns:
+            The same shape as the input tensor.
+        """
+        if len(input_shape) < 2:
+            raise ValueError("Input to Tril layer must be at least 2D.")
+        return input_shape
+
+
+@keras.saving.register_keras_serializable()
+class Triu(keras.layers.Layer):
+    """
+    A Keras layer to extract the upper triangular part of a tensor.
+
+    This layer is a wrapper for `keras.ops.triu`. Elements above the k-th
+    diagonal are zeroed out.
+
+    Args:
+        k (int, optional): The diagonal to consider. `k=0` is the main
+            diagonal, `k<0` is below, and `k>0` is above. Defaults to 0.
+    """
+
+    def __init__(self, k=0, **kwargs):
+        """
+        Initializes the Tril layer.
+        """
+        super().__init__(**kwargs)
+        self.k = k
+
+    def call(self, inputs):
+        """
+        Applies the triu operation.
+
+        Args:
+            inputs: The input tensor. Must be at least 2D.
+
+        Returns:
+            A new tensor with the lower triangular part zeroed out.
+        """
+        return ops.triu(inputs, k=self.k)
+
+    def get_ops(self):
+        return lambda x: ops.triu(x, k=self.k)
+
+    def compute_output_shape(self, input_shape):
+        """
+        Computes the output shape of the layer.
+
+        Since this operation does not change the tensor's shape, this method
+        returns the input shape unchanged.
+
+        Args:
+            input_shape: Shape of the input tensor.
+
+        Returns:
+            The same shape as the input tensor.
+        """
+        if len(input_shape) < 2:
+            raise ValueError("Input to Tril layer must be at least 2D.")
+        return input_shape
+
+
+@keras.saving.register_keras_serializable()
+class TrueDivide(keras.layers.Layer):
+    """
+    A Keras layer to compute element-wise true division of two tensors.
+
+    This layer is a wrapper for `keras.ops.true_divide` (the `/` operator).
+    It takes a list of two tensors as input, `[x1, x2]`, which must be
+    broadcastable to the same shape, and computes `x1 / x2`.
+    """
+
+    def __init__(self, **kwargs):
+        """
+        Initializes the TrueDivide layer.
+        """
+        super().__init__(**kwargs)
+
+    def call(self, inputs):
+        """
+        Applies the true division operation.
+
+        Args:
+            inputs: A list or tuple of two tensors, `[x1, x2]`.
+
+        Returns:
+            The tensor resulting from the element-wise division.
+        """
+        if not isinstance(inputs, (list, tuple)) or len(inputs) != 2:
+            raise ValueError("Input to TrueDivide layer must be a list of two tensors.")
+        x1, x2 = inputs
+        return ops.true_divide(x1, x2)
+
+    def get_ops(self):
+        return lambda x: ops.true_divide(x[0], x[1])
+
+    def compute_output_shape(self, input_shape):
+        """
+        Computes the output shape of the layer via broadcasting rules.
+        """
+        if not isinstance(input_shape, (list, tuple)) or len(input_shape) != 2:
+            raise ValueError("Input shape must be a list of two shapes.")
+
+        shape1, shape2 = input_shape
+
+        # To compute the broadcasted shape, we align shapes from the right.
+        s1_rev = list(shape1)[::-1]
+        s2_rev = list(shape2)[::-1]
+        max_len = max(len(s1_rev), len(s2_rev))
+
+        output_shape_rev = []
+        for i in range(max_len):
+            d1 = s1_rev[i] if i < len(s1_rev) else 1
+            d2 = s2_rev[i] if i < len(s2_rev) else 1
+
+            if d1 is None or d2 is None:
+                output_shape_rev.append(None)
+            elif d1 == d2 or d1 == 1 or d2 == 1:
+                output_shape_rev.append(max(d1, d2))
+            else:
+                raise ValueError("Input shapes are not broadcastable: " f"{shape1} and {shape2}")
+
+        return tuple(output_shape_rev[::-1])
+
+
+@keras.saving.register_keras_serializable()
+class Trunc(keras.layers.Layer):
+    """
+    A Keras layer to compute the element-wise truncated value of a tensor.
+
+    This layer is a wrapper for `keras.ops.trunc`. It rounds the input
+    elements towards zero.
+    """
+
+    def __init__(self, **kwargs):
+        """
+        Initializes the Trunc layer.
+        """
+        super().__init__(**kwargs)
+
+    def call(self, inputs):
+        """
+        Applies the truncation operation.
+
+        Args:
+            inputs: The input tensor.
+
+        Returns:
+            A new tensor with the truncated values.
+        """
+        return ops.trunc(inputs)
+
+    def get_ops(self):
+        return ops.trunc
+
+
+@keras.saving.register_keras_serializable()
+class Var(keras.layers.Layer):
+    """
+    A Keras layer to compute the variance of tensor elements.
+
+    This layer is a wrapper for `keras.ops.var`.
+
+    Args:
+        axis (int, tuple of ints, optional): The axis or axes along which
+            to compute the variance. If None, the variance of all elements
+            is computed. Defaults to None.
+        keepdims (bool, optional): If True, the reduced axes are left in the
+            result as dimensions with size 1. Defaults to False.
+    """
+
+    def __init__(self, axis=None, keepdims=False, **kwargs):
+        """
+        Initializes the Var layer.
+        """
+        super().__init__(**kwargs)
+        self.axis = axis
+        self.keepdims = keepdims
+
+    def call(self, inputs):
+        """
+        Applies the variance operation.
+
+        Args:
+            inputs: The input tensor.
+
+        Returns:
+            A tensor with the variances.
+        """
+        return ops.var(
+            inputs,
+            axis=self.axis,
+            keepdims=self.keepdims,
+        )
+
+    def compute_output_shape(self, input_shape):
+        """
+        Computes the output shape of the layer.
+        """
+        if self.axis is None:
+            if self.keepdims:
+                return (1,) * len(input_shape)
+            else:
+                return ()
+
+        # Normalize axis to be a tuple of positive integers
+        rank = len(input_shape)
+        axis = self.axis if isinstance(self.axis, (list, tuple)) else (self.axis,)
+        axis = [ax if ax >= 0 else rank + ax for ax in axis]
+
+        if self.keepdims:
+            output_shape = list(input_shape)
+            for ax in axis:
+                output_shape[ax] = 1
+            return tuple(output_shape)
+        else:
+            output_shape = [dim for i, dim in enumerate(input_shape) if i not in axis]
+            return tuple(output_shape)
+
+    def get_ops(self):
+        return lambda x: ops.var(
+            x,
+            axis=self.axis,
+            keepdims=self.keepdims,
+        )
 
 
 @keras.saving.register_keras_serializable()

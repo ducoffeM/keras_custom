@@ -1,8 +1,9 @@
+import keras
 import numpy as np
 import pytest
 from keras.layers import Input
 from keras.models import Model
-from keras_custom.numpy import (
+from keras_custom.layers.numpy import (
     Abs,
     Absolute,
     AMax,
@@ -39,9 +40,31 @@ from keras_custom.numpy import (
     Minimum,
     MoveAxis,
     Negative,
+    Norm,
     OnesLike,
+    Prod,
     Reciprocal,
     Repeat,
+    Roll,
+    Round,
+    Sign,
+    Sin,
+    Sinh,
+    Sort,
+    Sqrt,
+    Square,
+    Squeeze,
+    Stack,
+    Std,
+    SwapAxes,
+    Tan,
+    Trace,
+    Transpose,
+    Tril,
+    Triu,
+    TrueDivide,
+    Trunc,
+    Var,
     ZerosLike,
 )
 
@@ -119,10 +142,27 @@ def _test_ops_binary(keras_layer, input_shape):
         Log2(),
         MoveAxis(2, 1),
         Negative(),
+        Norm(ord=2, axis=-1),
         OnesLike(),
+        Prod(axis=-1, keepdims=True),
         Reciprocal(),
         Repeat(repeats=3, axis=-1),
-        ZerosLike,
+        Roll(shift=2, axis=-1),
+        Sign(),
+        Sin(),
+        Sinh(),
+        Sort(axis=-1),
+        Sqrt(),
+        Square(),
+        SwapAxes(axis1=1, axis2=2),
+        Tan(),
+        Trace(),
+        Transpose(axes=(0, 2, 1)),
+        Tril(k=2),
+        Triu(k=1),
+        Trunc(),
+        Var(axis=-1),
+        ZerosLike(),
     ],
 )
 def test_unary_ops(keras_layer):
@@ -130,9 +170,32 @@ def test_unary_ops(keras_layer):
     _test_ops_unary(keras_layer, input_shape)
 
 
+def test_unary_ops_Round():
+    # The operator 'aten::round.decimals_out' is not currently implemented for the MPS device
+    # skip the test if mps
+    # skip tests on MPS device as Conv3DTranspose is not implemented
+    if keras.config.backend() == "torch":
+        import torch
+
+        if torch.backends.mps.is_available():
+            pytest.skip(
+                "skip tests on MPS device as The operator 'aten::round.decimals_out' is not currently implemented"
+            )
+
+    keras_layer = Round(decimals=1)
+    input_shape = (2, 3)
+    _test_ops_unary(keras_layer, input_shape)
+
+
+def test_unary_ops_Squeeze():
+    keras_layer = Squeeze(axis=-1)
+    input_shape = (2, 3, 1)
+    _test_ops_unary(keras_layer, input_shape)
+
+
 @pytest.mark.parametrize(
     "keras_layer",
-    [Diag(k=1), Diagonal(), Flip(axis=-1), GetItem(1)],
+    [Diag(k=1), Diagonal(), Flip(axis=-1), GetItem(1), Std(axis=-1)],
 )
 def test_unary_vector_ops(keras_layer):
     input_shape = (4,)  # for 2D tensor including batch size
@@ -141,7 +204,17 @@ def test_unary_vector_ops(keras_layer):
 
 @pytest.mark.parametrize(
     "keras_layer",
-    [Append(axis=-1), Arctan2(), Average(axis=-1), Cross(), LogAddExp(), Maximum(), Minimum()],
+    [
+        Append(axis=-1),
+        Arctan2(),
+        Average(axis=-1),
+        Cross(),
+        LogAddExp(),
+        Maximum(),
+        Minimum(),
+        Stack(),
+        TrueDivide(),
+    ],
 )
 def test_binary_ops(keras_layer):
     input_shape = (2, 3)
@@ -150,9 +223,7 @@ def test_binary_ops(keras_layer):
 
 @pytest.mark.parametrize(
     "keras_layer",
-    [
-        Hstack(),
-    ],
+    [Hstack()],
 )
 def test_binary_vector_ops(keras_layer):
     input_shape = (4,)
