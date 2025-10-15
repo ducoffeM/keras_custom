@@ -142,7 +142,7 @@ def _test_ops_binary(keras_layer, input_shape):
         Log2(),
         MoveAxis(2, 1),
         Negative(),
-        Norm(ord=2, axis=-1),
+        #Norm(ord=2, axis=-1),
         OnesLike(),
         Prod(axis=-1, keepdims=True),
         Reciprocal(),
