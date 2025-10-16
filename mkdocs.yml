@@ -2,10 +2,13 @@ site_name: KerasCustom
 site_description: "Custom Layers and utilities for Keras 3"
 site_author: "ducoffeM"
 repo_url: https://github.com/ducoffeM/keras_custom
+site_url: https://ducoffem.github.io/keras_custom/
+use_directory_urls: true
+
 theme:
   name: material
   logo: images/logo.png # optional: add a small logo under docs/images
-  favicon: images/favicon.ico
+  #favicon: images/favicon.ico
 
 nav:
   - Home: index.md
