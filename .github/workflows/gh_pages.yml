@@ -1,14 +1,14 @@
-name: "Build and deploy Github pages"
+name: "Build and Deploy Docs"
 
 on:
   push:
     branches:
-      - main # or your default branch
+      - main
+    tags:
+      - 'v*.*.*' # Trigger on version tags like v1.0, v2.3.4
 
 permissions:
   contents: write # needed to push to gh-pages
-  pages: write
-  id-token: write
 
 jobs:
   build-and-deploy:
@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetches all history for all branches and tags, crucial for mike
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -25,15 +27,29 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install mkdocs mkdocs-material mike mkdocstrings[python]
-          # install your package in editable mode so mkdocstrings can import it:
+          pip install mkdocs-material mike mkdocstrings[python]
           pip install -e .
 
-      - name: "Setup Docs Deploy"
+      - name: Configure Git User
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-      - name: "Deploy Github Pages"
+
+      - name: Deploy Development Version (from main)
+        if: github.ref == 'refs/heads/main'
         run: |
-          mike deploy --push --update-aliases ${{ github.event.release.tag_name }} latest
+          echo "Deploying development version from the main branch..."
+          mike deploy --push --update-aliases main latest
+
+      - name: Deploy Released Version (from tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          # Extract the tag name (e.g., v1.2.3) from the Git ref
+          TAG_VERSION=${GITHUB_REF#refs/tags/}
+          echo "Deploying released version ${TAG_VERSION}..."
+
+          # Deploy the specific version and update 'latest' to point to it
+          mike deploy --push --update-aliases "${TAG_VERSION}" latest
+
+          # Set the new version as the default for the site
           mike set-default --push latest
