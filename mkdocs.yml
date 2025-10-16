@@ -5,6 +5,7 @@ repo_url: https://github.com/ducoffeM/keras_custom
 site_url: https://ducoffem.github.io/keras_custom/
 use_directory_urls: true
 
+
 theme:
   name: material
   logo: images/logo.png # optional: add a small logo under docs/images
