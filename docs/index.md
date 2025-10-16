@@ -10,15 +10,15 @@
 
 ## 🌟 Overview
 
-**KerasCustom** provides advanced and non-native Keras layers and operations that simplify the definition, transformation, and manipulation of neural network architectures.  
+**KerasCustom** provides advanced and non-native Keras layers and operations that simplify the definition, transformation, and manipulation of neural network architectures.
 It is built to integrate seamlessly with the Keras Core backend system (TensorFlow, JAX, or PyTorch).
 
 This library is part of a broader ecosystem including:
 
-- **[JacobiNet](https://github.com/ducoffeM/jacobinet)** – for Jacobian computation as a Keras layer  
-- **[Decomon](https://github.com/airbus/decomon)** – for LiRPA / formal verification methods  
-- **[Onnx2Keras3](https://github.com/ducoffeM/onnx2keras3)** – for ONNX-to-Keras model conversion  
-- **[Keras2Marabou](https://github.com/ducoffeM/keras2marabou)** – for expressing verification properties  
+- **[JacobiNet](https://github.com/ducoffeM/jacobinet)** – for Jacobian computation as a Keras layer
+- **[Decomon](https://github.com/airbus/decomon)** – for LiRPA / formal verification methods
+- **[Onnx2Keras3](https://github.com/ducoffeM/onnx2keras3)** – for ONNX-to-Keras model conversion
+- **[Keras2Marabou](https://github.com/ducoffeM/keras2marabou)** – for expressing verification properties
 - **[Airobas](https://github.com/airbus/airobas)** – for end-to-end formal verification pipelines
 
 ---

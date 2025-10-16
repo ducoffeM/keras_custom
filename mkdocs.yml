@@ -9,7 +9,9 @@ theme:
 
 nav:
   - Home: index.md
-  - Getting started: getting-started.md
+  - Getting started: getting_started.md
+  - How to Contribute: contribute.md
+  - Installation: install.md
   - Tutorials:
       - Model splitting: tutorials/model-splitting.md
       - Model switching: tutorials/model-switching.md
@@ -22,12 +24,10 @@ plugins:
       handlers:
         python:
           options:
-            docstring_style: numpy # or google or napoleon-like
-            rendering:
-              show_root_toc_entry: true
+            show_root_heading: true # Move this up
+            # Any other options at this level
 
 markdown_extensions:
   - admonition
   - toc:
       permalink: true
-

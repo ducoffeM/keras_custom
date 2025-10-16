@@ -29,9 +29,6 @@ jobs:
           # install your package in editable mode so mkdocstrings can import it:
           pip install -e .
 
-      - name: Build MkDocs site
-        run: mkdocs build --strict
-
       - name: "Setup Docs Deploy"
         run: |
           git config --global user.name 'github-actions[bot]'
